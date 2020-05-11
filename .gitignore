@@ -6,6 +6,7 @@
 title_page.rmd
 title_page.pdf
 title_page.tex
+title_page_cache/
 analyses_cache/
 analyses_additional_cache/
 manuscript.aux
@@ -23,3 +24,5 @@ data/data_wide_all.csv
 data/data.csv
 data/archive
 data/workspace.RData
+data/codebook.xlsx
+data/data_wrangling.R

@@ -1,0 +1,591 @@
+---
+title             : "Analyzing the Privacy Paradox Using a Nationally Representative Three-Wave Panel Study" 
+shorttitle        : "Privacy Paradox"
+author:            
+  - name          : ""
+    email         : ""
+    affiliation   : "1"
+    address       : ""
+    corresponding : yes
+affiliation:
+    
+  - id            : "1"
+    institution   : ""
+author_note: |
+  This manuscript features a companion website that includes detailed summaries of the statistical results, the code, additional analyses, and a reproducible version of the manuscript (https://github.com/XMtRa/privacy-paradox). The data can be downloaded from [link blinded during review]. 
+abstract: |
+  The privacy paradox states that people's concerns about online privacy are unrelated to their online sharing of personal information. 
+  On the basis of a representative sample of the German population, which includes `r knitr::load_cache(label = "load-data", object = "n_complete")` respondents who were interviewed at three waves separated by 6 months, we investigate the privacy paradox from a longitudinal perspective. Using a cross-lagged panel model with random intercepts, we differentiate between-person relations from within-person effects.
+  Results revealed that people who were more concerned about their online privacy than others also shared slightly less personal information and had substantially more negative attitudes toward information sharing (between-person level). 
+  People who were more concerned than usual also shared slightly less information than usual (within-person level). 
+  We found no long-term effects of privacy concerns on information sharing or attitudes 6 months later.
+  The results provide further evidence against the privacy paradox, but more research is needed to better understand the variables' potential causal relations.
+keywords          : "privacy paradox, privacy concerns, information sharing, longitudinal analysis, structural equation modeling"
+wordcount         : "`r wordcountaddin::word_count('manuscript.Rmd')`"
+figsintext        : yes
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+lineno            : yes
+bibliography      : 
+  - [bibliography/references.bib]
+  - [bibliography/r-references.bib]
+lang              : "english"
+class             : "man"
+mask              : yes
+# to compile as pdf
+# (a) move file "_site.yml" to folder "tmp"
+# (b) uncomment the following lines until incl. "\raggedbottom"
+# (c) comment lines after "output: html_document ..."
+# output            : papaja::apa6_pdf
+# header-includes:
+#   - \setlength{\parskip}{0em}
+#   - \raggedbottom
+output:
+  html_document:
+    toc: TRUE
+    toc_float:
+      collapsed: FALSE
+    toc_depth: 2
+---
+
+```{r knitr-set-up, include=F}
+knitr::opts_chunk$set(echo=F, error=F, message=F, tidy=T, warning=F)
+```
+
+```{r load-packs, include=F}
+# Load and install packages
+# devtools::install_github("tdienlin/td@v.0.0.2.5")  # uncommen to install
+packages <- c("broman", "kableExtra", "knitr", "lavaan", "magrittr", "papaja"
+             , "psych", "pwr", "td", "tidyverse", "semTools", "scales")
+invisible(lapply(packages, library, character.only = T))
+
+# load r-bib
+r_citations <- cite_r("bibliography/r-references.bib", 
+                      footnote = FALSE, 
+                      pkgs = c("GGally", "ggplot2", "lavaan", 
+                               "MissMech", "MVN", "psych", "pwr",  
+                               "semTools", "sjstats"), 
+                      withhold = FALSE)
+```
+
+```{r load-data, include=F, cache=T}
+# Load Workspace
+load("data/workspace.RData")
+```
+
+# Introduction
+
+The privacy paradox states that the information disclosure of Internet users is problematic: 
+Although many people are concerned about their privacy online, they still share plenty of personal information on the web [e.g., @acquistiLossesGainsHyperbolic2003]. 
+The privacy paradox is of considerable interest to society---it is discussed in newspapers [@freanFindingSolutionsPrivacy2017], Wikipedia entries  [@wikipediaPrivacyConcernsSocial2018], designated websites [@newyorkpublicradioPrivacyParadox2018], books [@treptePrivacyOnlinePerspectives2011], and top-tier academic journals [@acquistiPrivacyHumanBehavior2015].
+If the privacy paradox really exists, it should inspire worry: 
+It would suggest that online behavior is irrational and that people are revealing too much of their personal information, which can cause various problems [e.g., @sevignaniPrivacyCapitalismAge2016].
+Understanding why people disclose information online and whether or not this is paradoxical therefore represents an important challenge. 
+
+However, current research on the privacy paradox has one major limitation. 
+To the best of our knowledge, most empirical studies conducted so far have investigated the privacy paradox from a between-person perspective.
+By employing empirical tests of relations between people (e.g., cross-sectional questionnaires analyzed with multiple regression or Pearson correlations), studies have analyzed whether people who are more concerned than _others_ also share less personal information than _others_.
+Although such a perspective is interesting and represents a viable first step, it cannot make informed claims regarding causality.
+The privacy paradox, however, implies a causal perspective:
+Does a person, if _he or she_ becomes more concerned about online privacy, then also share less personal information?
+This mismatch is problematic because although between-person relations are, except for some special cases, a _necessary_ condition for causal within-person effects, they are by no means a _sufficient_ one.
+For example, it could be that the between-person relation is determined other third variables. 
+Hence, as the next step in investigating the privacy paradox and to better understand the causal relation between privacy concerns and information sharing, it is necessary to conduct studies with within-person designs.
+
+With this study we aim to answer four major questions. 
+First, on a between-person level, how are concerns about online privacy related to the online sharing of personal information? 
+Second, on a within-person level, does information sharing decrease when concerns increase?
+Third, what are the potential long-term effects?
+Are changes in concerns related to changes in information sharing 6 months later and/or vice versa? 
+Fourth, what is the role of privacy attitudes, do they mediate the relation between privacy concerns and information sharing?
+To best answer and contextualize these questions, we first provide an in-depth theoretical analysis of the privacy paradox, after which we present the empirical results of a longitudinal panel study, which is representative of the German population.
+
+## A Brief History of the Privacy Paradox
+
+@acquistiLossesGainsHyperbolic2003 were among the first to argue that the online disclosure of personal information is paradoxical. 
+"Experiments reveal that very few individuals actually take any action to protect their personal information, even when doing so involves limited costs" (p.1). 
+Three years later, @barnesPrivacyParadoxSocial2006 discussed the behavior of young people on SNSs, popularizing the term _privacy paradox_. 
+Barnes listed six aspects of online behavior that she considered to be particularly paradoxical: (a) illusion of privacy, (b) high quantity of information sharing, (c) attitude behavior discrepancy, (d) lack of privacy concerns, (e) lack of privacy literacy, and (f) fabrication of false information.
+@norbergPrivacyParadoxPersonal2007 were one of the first to empirically analyze the privacy paradox explicitly.
+The study found a mismatch between concerns and behavior, which is aligned with several other experimental studies conducted at the time [@beresfordUnwillingnessPayPrivacy2012; @hannOvercomingOnlineInformation2007; @hubermanValuatingPrivacy2005]. 
+
+While there are various understandings and operationalizations of the privacy paradox [@kokolakisPrivacyAttitudesPrivacy2017], subsequent research focused on Barnes's third tenet, the attitude-behavior discrepancy. 
+Whereas some studies reported that privacy concerns were not significantly related to the disclosure of personal information [e.g., @grossInformationRevelationPrivacy2005; @taddickenPrivacyParadoxSocial2014; @tufekciCanYouSee2008], which lends credence to the privacy paradox, 
+a different set of studies showed significant relations [e.g., @dienlinPrivacyParadoxRelic2015; @heirmanPredictingAdolescentsDisclosure2013; @walraveConnectingProtectingComparing2012], which refutes the privacy paradox. 
+
+Notably, in a parallel line of research other studies have also analyzed the relation between privacy concerns and information sharing.
+However, the term privacy paradox was often not used explicitly. 
+Instead, studies have referred to the so-called _privacy calculus_, 
+which states that the sharing of personal information online is affected by both the respective costs and the anticipated benefits [@culnanInformationPrivacyConcerns1999].
+By now, several studies have found empirical support for the privacy calculus in various online contexts [e.g., @bolUnderstandingEffectsPersonalization2018; @dienlinExtendedPrivacyCalculus2016; @krasnovaOnlineSocialNetworks2010].
+
+@baruhOnlinePrivacyConcerns2017 published the first empirical meta-analysis on the relations between privacy concerns and various forms of social media use (e.g., information sharing or SNS usage). 
+On the basis of 37 studies, @baruhOnlinePrivacyConcerns2017 found a small and significant statistical relation between concerns about online privacy and online information sharing (_r_ = -.13, 95% CI [-.07, -.18]). 
+Another more recent meta analysis by @yuMetaanalysisExplorePrivacy2020 also finds a significant bivariate relation between privacy concerns and information sharing, albeit smaller (_r_ = -.06, 95% CI [-.01, -.12]]). 
+There also exist several systematic literature reviews on the privacy paradox [@barthPrivacyParadoxInvestigating2017; @gerberExplainingPrivacyParadox2018; @kokolakisPrivacyAttitudesPrivacy2017].
+@kokolakisPrivacyAttitudesPrivacy2017 come to the conclusion that "the dichotomy between privacy attitude and behaviour should not be considered a paradox anymore." (p. 130)
+However, the authors also note that the privacy paradox is a "complex phenomenon that has not been fully explained yet".
+@barthPrivacyParadoxInvestigating2017 are more skeptical, and argue that "attempts to theoretically explain and practically solve the problem of the privacy paradox are still scarce and we feel the subject deserves far more research attention" (p. 1052).
+
+<!-- In conclusion, large parts of the current literature suggests that a significant relation between concerns about online privacy and the online sharing of personal information exists and that it is small---which speaks against the privacy paradox. -->
+
+## Defining Privacy Concerns and Information Sharing
+
+Privacy is defined as the "[...] voluntary and temporary withdrawal of a person from the general society through physical or psychological means [...]" [@westinPrivacyFreedom1967, 7]. 
+Privacy captures aspects of both volitional _control_ and social _separateness_ [@braunlichLinkingLooseEnds2020; @marwickNetworkedPrivacyHow2014].
+Several dimensions of privacy have been proposed.
+For example, it is possible to distinguish a vertical and a horizontal level [@masurSituationalPrivacySelfdisclosure2018].
+Whereas the vertical level captures privacy from authorities, institutions, or companies, horizontal privacy addresses privacy from peers, colleagues, or other people.
+When it comes to concerns in general, interestingly they do not seem to be established as a stand-alone theoretical concept in psychology [@colmanDictionaryPsychology2015].
+Lexically, concerns are defined as a "marked interest or regard usually arising through a personal tie or relationship" that also reflect an "uneasy state of blended interest, uncertainty, and apprehension" [@merriam-websterDefinitionConcern2018].
+Concerns therefore represent both a latent _motivation_ (or increased attention), a negatively valenced _emotion_ (or affective condition), and are mostly implicit.
+As a theoretical construct, privacy concerns can hence be categorized as an affective motivational disposition.
+As such, there are many similarities with other concepts, including emotions (e.g., fear, anxiety), moods (e.g., dismay, fatigue), attitudes (risk perception, approval), values (e.g., autonomy, freedom), personality traits (e.g., introversion, risk avoidance), and even physiological activation (e.g., attention, arousal).
+Taken together, concerns about online privacy represent how much an individual is motivated to focus on his or her control over a voluntary withdrawal from other people or societal institutions on the Internet, accompanied by an uneasy feeling that his or her privacy might be threatened.
+
+The online sharing of personal information, on the other hand, captures how much person-related information people share when they use the Internet, including information about their age, sex, name, address, health, and finances.
+Information sharing can be differentiated from communication and self-disclosure.
+Communication is broad, because it comprises all verbal and nonverbal information that is emitted [e.g., @watzlawickPragmaticsHumanCommunication2011].
+Self-disclosure is narrow, because it focuses on deliberate revelations about the true self to others [e.g., @jourardTransparentSelf1964].
+Information sharing is even more specific, because it addresses only person-related information but ignores other types of self-disclosure such as personal fears, values, or plans. 
+
+## The Relation Between Privacy Concerns and Information Sharing
+
+Currently, there is a lack of studies that explicitly analyze how behavior is affected by _concerns_ in general.
+Fortunately, however, we know much about the behavioral effects of related concepts such as attitudes or fears, which all can affect behavior, sometimes profoundly [@fishbeinPredictingChangingBehavior2010; @rogersCognitivePhysiologicalProcesses1983].
+Emotions, perhaps the concept most closely related to concerns, have a particularly strong effect on behavior. 
+By causing fight, flight, or freeze reactions, they are a primordial trigger of behavior and are considered to be an adaptive mechanism of evolved species [@dolanEmotionCognitionBehavior2002].
+<!-- With their direct link to the amygdala, emotions can trigger reactions already subcortically [i.e., without activation of the more recently evolved cortical structures; @dolanEmotionCognitionBehavior2002]. -->
+
+Also empirically, concerns have been shown to affect behavior. 
+People more concerned about the environment show more environment-related behaviors [@bambergHowDoesEnvironmental2003].
+People more concerned about their appearance consume fewer calories [@hayesConcernAppearanceHealth1987].
+People more concerned about their bodies engage in more physical exercise [@reelRelationsBodyConcerns2007].
+Taken together, it is reasonable to expect that also concerns about online privacy should somehow reflect in the online sharing of personal information. 
+
+At the same time, there are some factors that likely diminish the relation.
+Most prominently, there is the so-called _attitude behavior gap_ [@fishbeinPredictingChangingBehavior2010], which states that people sometimes act against their own attitudes. 
+Evidently, not everyone concerned about their physical health exercises regularly.
+The explanation is simple:
+Other factors such as subjective norms and perceived behavioral control also determine behavior [@ajzenIntentionsActionsTheory1985], which automatically reduces the impact of attitudes or concerns. 
+Specifically, two of the most influential factors that affect online information sharing are (a) strong subjective norms [@heirmanPredictingAdolescentsDisclosure2013] and (b) expected benefits [@krasnovaOnlineSocialNetworks2010]. 
+In other words, users often prioritize social support, special offers, or improved services, accepting that their privacy will be diminished.
+@trepteRiskyBehaviorsHow2014 listed several factors that can additionally attenuate the relation:
+lack of strength of concerns,
+absence of negative personal experiences, 
+or situational constraints due to social desirability.
+In conclusion, also in the context of the privacy paradox it _not_ reasonable to expect a _perfect_ relation between attitudes and behaviors.
+However, we should still expect to find a relation that is _small_ or _moderate_.
+
+There are also some methodological explanations as to why some studies did not detect statistically significant relations.
+Researchers are always confronted with the so-called _Duhem-Quine problem_, according to which it is impossible to test theories in isolation, because empirical tests always rely on auxiliary assumptions [@dienesUnderstandingPsychologyScience2008]. 
+In other words, if a psychological experiment fails, we do not know whether the theory is wrong or the questionnaire subpar. 
+This tenet is particularly relevant for the privacy paradox: 
+Detecting statistical significance for small effects---and, again, we should expect to find small effects---is more challenging because it means that large samples are necessary to guarantee sufficient statistical power.[^power]
+Precisely, in order to be capable of detecting a correlation between privacy concerns and information sharing in 95% of all cases, which @baruhOnlinePrivacyConcerns2017 estimated to be _r_ = -.13, we need a sample of _N_ = `r pwr.r.test(r = -.13, sig.level = .05, power = .95)$n %>%  round(0)` people. 
+The reality, however, looks different: 
+In their meta-analysis, @baruhOnlinePrivacyConcerns2017 reported a median sample size of _N_ = 300, which can explain why several studies did not find significant effects.
+
+[^power]: Statistical power describes the probability of statistically detecting an effect that exists empirically. 
+Only with high statistical power is it possible to make valid claims about an effect's existence [@cohenPowerPrimer1992]. 
+
+In conclusion, in line with prior research and the within-person rationales presented above, we expect to find a small significant relation between privacy concerns and information sharing, both on the between-person level and the within-person level.
+
+Hypothesis 1: People who are more concerned about their online privacy than others will also be less likely to share personal information online than others.
+
+Hypothesis 2: People who are more concerned about their online privacy than they usually are will also share less personal information online than they usually do.
+
+## Long-Term Perspective
+
+Although short-term effects are likely, it is still unclear whether long-term effects exist as well.
+First, when analyzing potential long-term effects, it is important to choose an interval that is both plausible and relevant.
+(It makes a large difference whether the effects of alcohol consumption on driving performance are tested after say 1 minute, 1 hour, or 1 day.) 
+One factor that determines an interval's optimal length is the stability of the variables [@dormannOptimalTimeLags2015].
+Privacy concerns and privacy attitudes are predominantly trait-like constructs with high stabilities, which is why they necessitate longer intervals.
+Other studies with comparable research questions have therefore used an interval of 6 months [e.g., @valkenburgEffectsInstantMessaging2009], which we adopt also in this study.
+
+In general, we believe that it should be possible to find long-term effects. 
+It has been argued that privacy concerns affect privacy behavior in the long run [e.g., @heirmanPredictingAdolescentsDisclosure2013]. 
+The underlying theoretical mechanism could be that the emotional part of privacy concerns causes (a) motivated information selection and (b) motivated information processing, which is likely to change actual behavior [@nabiCognitivefunctionalModelEffects1999]. 
+Specifically, when privacy concerns increase (e.g., because of experienced or witnessed privacy infringements), people might begin reading more media articles on privacy issues and might also consume these articles more carefully, which could prompt information sharing practices that are more cautious.
+Also empirically, a study with 290 participants found small negative longitudinal (between-person) relations between privacy concerns and self-disclosure [@koohikamaliInvestigationDynamicModel2019].
+
+At the same time, the adverse effect seems plausible as well, with two potential outcomes. 
+On the one hand, the long-term relation could be positive: 
+If people start to share more information online, they might become increasingly aware that their privacy is at risk, thereby stirring concern [@tsay-vogelSocialMediaCultivating2018].
+On the other hand, the long-term relation might also be negative:
+When people share more personal information online they might become accustomed to doing so, which potentially reduces concern [for example, due to the mere exposure effect; @zajoncAttitudinalEffectsMere1968].
+Finally, there could also be no long-term relation at all: 
+People might have already become used to sharing information online, which stifles further cognitive or emotional processing.
+This rationale is central to so-called _privacy cynicism_ [e.g., @hoffmannPrivacyCynicismNew2016]. 
+
+Research Question 1.1: Do changes in concerns about online privacy affect the online sharing of personal information 6 months later?
+
+Research Question 1.2: Do changes in the online sharing of personal information affect concerns about online privacy 6 months later?
+
+## The Role of Attitudes
+
+It has been argued that privacy attitudes could bridge the gap between concerns and information sharing [e.g., @dienlinPrivacyParadoxRelic2015]. 
+In contrast to privacy concerns, privacy attitudes capture a more explicit, fluctuating cognitive appraisal [@tsay-vogelSocialMediaCultivating2018]. 
+Although both variables are related to information disclosure, attitudes are likely the better predictor. 
+This reasoning follows the rational choice paradigm [@simonBehavioralModelRational1955], which maintains that behavior is always at least partially influenced by convictions, attitudes, and cost-benefit analyses. 
+Also empirically, a study of 1,042 youths from Belgium found that the relation between privacy attitudes and disclosure of personal information was strong (_r_ = .56), whereas the relation between privacy concerns and disclosure was only moderate [_r_ = -.29; @heirmanPredictingAdolescentsDisclosure2013]. 
+
+Hypothesis 3.1: People who are more concerned about their online privacy than others will also hold a less positive attitude toward the online sharing of personal information than others.
+
+Hypothesis 3.2: People with a more positive attitude toward the online sharing of personal information than others will also share more information online than others.
+
+Hypothesis 4.1: People who are more concerned about their online privacy than they usually are will also hold a less positive attitude toward the online sharing of personal information than they usually do.
+
+Hypothesis 4.2: People with a more positive attitude toward the online sharing of personal information than they usually have will also share more information online than they usually do.
+
+Concerning the potential long-term relations of privacy attitudes, we are confronted with the same situation mentioned above.
+Because we are not aware of research on long-term relations, several scenarios seem plausible.
+Attitudes could either have long-term relations or not, and information sharing could either foster privacy attitudes or diminish them.
+
+Research Question 2.1: Do changes in concerns about online privacy affect attitudes toward the online sharing of personal information 6 months later?
+
+Research Question 2.2: Do changes in attitudes toward the online sharing of personal information affect concerns about online privacy 6 months later?
+
+Research Question 3.1: Do changes in attitudes toward the online sharing of personal information affect the online sharing of personal information 6 months later?
+
+Research Question 3.2: Do changes in the online sharing of personal information affect attitudes toward the online sharing of personal information 6 months later?
+
+# Method
+## Statistics
+
+We follow the recommendation by @lakensJustifyYourAlpha2018 and first justify the choice of our alpha level. 
+We determined adequate error margins by considering the potential implications of both false positive and false negative findings (i.e., alpha and beta errors): 
+On the one hand, if we committed an alpha error, we would wrongfully conclude that people's concerns and behaviors are consistent. 
+Communicating such a false result to the public might unjustly reassure people when they should be more alert.
+On the other hand, if we committed a beta error, we would wrongfully conclude that individuals behave paradoxically.
+Communicating such a false result would unjustly accuse people of implausible behavior, potentially causing unnecessary distress or reactance.
+We consider both errors to be equally detrimental. 
+Hence, we chose balanced error rates, setting a maximum error rate of 5% for both alpha and beta. 
+As the smallest effect size of interest [SESOI; @lakensEquivalenceTestingPsychological2018], we chose to consider effects that are at least small [i.e., standardized coefficients above $\beta$ = `r sesoi %>% my_round("beta")`; @cohenPowerPrimer1992] as able to offer empirical support for our theoretical hypotheses.
+Significantly smaller effects were not considered able to offer support.
+The six hypotheses were tested with a one-tailed approach and the six research questions with a two-tailed approach.
+On the basis of the balanced alpha-beta approach with a maximum error probability of `r alpha %>% round(3) * 100`%, a desired power of `r power %>% round(3) * 100`%, and an SESOI of $\beta$ = `r sesoi %>% my_round("beta")`, we calculated a minimum sample size of `r dollar_format(prefix = "")(round(n_apriori, 0))` respondents. 
+Given the final sample size of `r dollar_format(prefix = "")(n)` respondents (see below), alpha and beta errors were balanced for our hypotheses (research questions) when we used a critical alpha of `r alpha_balanced_h  %>% round(3) * 100`% (`r alpha_balanced_rq  %>% round(3) * 100`%), resulting in a power of `r power_balanced_h %>% round(3) * 100`%  (`r power_balanced_rq %>% round(3) * 100`%) to detect small effects. 
+
+```{r RICLPM, fig.cap="Visual representation of the estimated random-intercept cross-lagged panel model (RI-CLPM).", fig.align="center"}
+knitr::include_graphics("figures/model_7.png")
+```
+
+The data were analyzed using of a random-intercept cross-lagged panel model [RI-CLPM, @hamakerCritiqueCrosslaggedPanel2015].
+For a visualization, see Figure \@ref(fig:RICLPM).
+Note that in contrast to regular cross-lagged panel models (CLPMs), RI-CLPMs can separate between-person variance from within-person variance. 
+We used factor scores as observed variables to represent the variables' latent structure more closely.
+We tested H1, H3.1, and H3.2 by correlating the random intercepts, which represent the respondents' individual mean scores across all three waves.
+We tested H2, H4.1, and H4.2 by correlating the respondents' within-person variance at T1, which captures their specific deviation at T1 from their overall score.
+We tested all research questions by regressing variables on all other measures obtained 6 months earlier.
+Given that we had three points of measurement, this resulted in two estimates for each research question.
+As we did not assume longitudinal effects to differ across time, they were constrained to be equal across all waves, which produces one single general measure of each effect instead of two time-specific ones.
+(We later tested this assumption empirically.
+As expected, the model with constrained effects did not show significantly reduced model fit, $\chi$^2^(`r model_comp[2, 6]`) = `r model_comp[2, 7] %>% my_round("p")`, _p_ = `r model_comp[2, 5] %>% my_round("est")`, which supports that effects did not change over time.)
+Fit was assessed according to the common criteria as described by @klinePrinciplesPracticeStructural2016. 
+The final model fit the data well, `r fit_txt(fit_riclpm)`. 
+
+For the analyses, we used `r r_citations`.
+The code, additional analyses, and a reproducible version of this manuscript can be found on the manuscript's companion website at https://XMtRa.github.io/privacy-paradox.
+
+## Procedure and Respondents
+
+This study is part of a large-scale project which investigates the development of privacy and self-disclosure, including several other variables. 
+Other publications linked to the project can be accessed at [link blinded during review].
+The data come from a longitudinal paper-and-pencil questionnaire study, in which a representative sample of the German population (16 years and older) was surveyed on overall five occasions.
+The data can be downloaded from [link blinded during review].
+
+The first three waves were collected from May 2014 to May 2015, with intervals of 6 months each.
+The last two waves were collected on May 2016 and May 2017, and had an interval of one year.
+Because we hypothesized the effects to take place across half a year, the last two waves were not included in the analyses presented here.
+First, a sample of 14,714 potential respondents was drawn from a representative omnibus survey in Germany (ADM master sample), using a random last-two-digit dialing procedure. 
+In this CATI screening, 5,286 respondents agreed to participate in all following waves. 
+Wave 1 was completed by 3,278 respondents (response rate: `r round((1 - (3278 / 5286)) * 100, 0)`%), Wave 2 by 2,448 respondents (attrition rate: `r round((1 - (2448 / 3278)) * 100, 0)`%), and Wave 3 by 2,021 respondents (attrition rate: `r round((1 - (2021 / 2448)) * 100, 0)`%). 
+We filtered respondents who never used the Internet at all waves, answered fewer than 50% of the items in each scale for at least one wave, provided inconsistent birth-dates across measurements, or did not report sociodemographic variables.
+The final sample consisted of *n* = `r dollar_format(prefix = "")(n_complete)` respondents. 
+
+In the final sample, the rate of missing data was `r na_per %>% round(2)`%. 
+Visual inspection of the missing value patterns as well as the non-parametric test by @R-MissMech suggested that all missing values could be considered missing at random (*p* `r test_mar_p %>% my_round("p_txt")`). 
+Therefore, Full Information Maximum Likelihood estimation was conducted using all available data.
+The average age was `r round(age_m, 0)` years (*SD* = `r round(age_sd, 0)` years), and `r round(male_per, 2) * 100`% were male. 
+About `r round(edu_col_per, 0)`% reported that they had graduated from college. 
+
+## Measures
+
+We tested the factorial validity of all measures using confirmatory factor analysis (CFA). 
+Each CFA included the items from all three waves. 
+For each item, factor loadings were constrained to be equal across waves.
+Constrained and unconstrained models were compared using $\chi^2$ differences tests.
+All results were nonsignificant, suggesting longitudinal factorial invariance.
+The measures showed good composite reliability in all three waves. 
+Graphical displays of the variables' distributions showed that privacy concerns were skewed to the left, privacy attitudes were normally distributed, and information sharing was skewed to the right (Figure \@ref(fig:Distributions), diagonal).
+We calculated intra-class correlation coefficients to quantify how much variance in the variables' factor scores could be attributed to between-person differences.
+An English translation of the original German items can be found in the OSM.
+
+### Concerns about online privacy
+
+Privacy concerns were measured as a second-order factor. 
+Three items captured the vertical dimension (e.g., "How concerned are you that institutions or intelligence services collect and analyze data that you disclosed on the Internet?"), and three items captured the horizontal dimension (e.g., "How concerned are you that people that you do not know might obtain information about you because of you online activities?"). 
+Respondents rated all items on a 5-point scale ranging from 1 (*not at all concerned*) to 5 (*very concerned*). 
+The means were _M_~t1~ = `r desc[["t1_pri_con_m_mean"]] %>% my_round(2)`, 
+_M_~t2~ = `r desc[["t2_pri_con_m_mean"]] %>% my_round(2)`, 
+_M_~t3~ = `r desc[["t3_pri_con_m_mean"]] %>% my_round(2)`, 
+and the standard deviations _SD_~t1~ = `r desc[["t1_pri_con_m_sd"]] %>% my_round(2)`, 
+_SD_~t2~ = `r desc[["t2_pri_con_m_sd"]] %>% my_round(2)`, and
+_SD_~t3~ = `r desc[["t3_pri_con_m_sd"]] %>% my_round(2)`.
+The two-dimensional model fit the data well, 
+`r fit_txt(fit_pri_con_4)`.
+The reliability was high ($\omega$~t1~ = `r reliabilityL2(fit_pri_con_4, "t1_pri_con_f")[["omegaL2"]] %>% my_round("std")`, $\omega$~t2~ = `r reliabilityL2(fit_pri_con_4, "t2_pri_con_f")[["omegaL2"]] %>% my_round("std")`, $\omega$~t3~ = `r reliabilityL2(fit_pri_con_4, "t3_pri_con_f")[["omegaL2"]] %>% my_round("std")`).
+Overall, `r icc_pri_con$ICC_adjusted * 100 %>% round(0)`% of the measure's variance was explained by differences between persons.
+
+### The online sharing of personal information 
+
+To measure respondent's level of information disclosure, they were asked how often they disclosed 10 different pieces of information on the Internet. 
+The exact question was: "How often do you disclose the following pieces of information online (i.e., on the Internet)?" 
+Each item was answered on a 5-point scale ranging from 1 (*never*) to 5 (*daily*). 
+Factor analyses suggested a second-order factor structure with five first-order factors of two items each.
+The first first-order factor subsumed financial and medical information, the second first and last name, the third place of residence and street (including house number), the fourth email address and phone number, and the fifth information about education and current job. 
+The means were _M_~t1~ = `r desc[["t1_inf_sha_beh_m_mean"]] %>% my_round(2)`, 
+_M_~t2~ = `r desc[["t2_inf_sha_beh_m_mean"]] %>% my_round(2)`, 
+_M_~t3~ = `r desc[["t3_inf_sha_beh_m_mean"]] %>% my_round(2)`, 
+and the standard deviations _SD_~t1~ = `r desc[["t1_inf_sha_beh_m_sd"]] %>% my_round(2)`, 
+_SD_~t2~ = `r desc[["t2_inf_sha_beh_m_sd"]] %>% my_round(2)`, and
+_SD_~t3~ = `r desc[["t3_inf_sha_beh_m_sd"]] %>% my_round(2)`.
+The model fit the data adequately,
+`r fit_txt(fit_inf_sha_beh_4)`.
+The reliability was high ($\omega$~t1~ = `r reliabilityL2(fit_inf_sha_beh_4, "t1_inf_sha_beh_f")[["omegaL2"]] %>% my_round("std")`, $\omega$~t2~ = `r reliabilityL2(fit_inf_sha_beh_4, "t2_inf_sha_beh_f")[["omegaL2"]] %>% my_round("std")`, $\omega$~t3~ = `r reliabilityL2(fit_inf_sha_beh_4, "t3_inf_sha_beh_f")[["omegaL2"]] %>% my_round("std")`).
+Overall, `r icc_inf_sha_beh$ICC_adjusted * 100 %>% round(0)`% of the measure's variance was explained by differences between persons.
+
+### Attitudes toward the online sharing of personal information
+
+Respondents' attitudes toward disclosing personal information online were captured with 10 items that measured the general appraisal of disclosing the same 10 pieces of information. 
+Adhering to the principle of compatibility [@fishbeinPredictingChangingBehavior2010], the items were parallel to those of the actual disclosure scale. 
+Specifically, we asked: 
+"Do you think that it is sensible to disclose the following pieces of information online (i.e., on the Internet)?" 
+The scale ranged from 1 (*not at all sensible*) to 5 (*very sensible*). 
+The means were _M_~t1~ = `r desc[["t1_pri_con_m_mean"]] %>% my_round(2)`, 
+_M_~t2~ = `r desc[["t2_pri_con_m_mean"]] %>% my_round(2)`, 
+_M_~t3~ = `r desc[["t3_pri_con_m_mean"]] %>% my_round(2)`, 
+and the standard deviations _SD_~t1~ = `r desc[["t1_pri_con_m_sd"]] %>% my_round(2)`, 
+_SD_~t2~ = `r desc[["t2_pri_con_m_sd"]] %>% my_round(2)`, and
+_SD_~t3~ = `r desc[["t3_pri_con_m_sd"]] %>% my_round(2)`.
+The second-order model with five first-order factors showed an adequate model fit,
+`r fit_txt(fit_inf_sha_att_4)`.
+The reliability was high ($\omega$~t1~ = `r reliabilityL2(fit_inf_sha_att_4, "t1_inf_sha_att_f")[["omegaL2"]] %>% my_round("std")`, $\omega$~t2~ = `r reliabilityL2(fit_inf_sha_att_4, "t2_inf_sha_att_f")[["omegaL2"]] %>% my_round("std")`, $\omega$~t3~ = `r reliabilityL2(fit_inf_sha_att_4, "t3_inf_sha_att_f")[["omegaL2"]] %>% my_round("std")`).
+Overall, `r icc_inf_sha_att$ICC_adjusted * 100 %>% round(0)`% of the measure's variance was explained by differences between persons.
+
+# Results
+
+In a first descriptive step, we analyzed the variables' bivariate relations. All variables associated with the hypotheses showed correlations that were in line with our theoretical rationales (Figure \@ref(fig:Distributions), above the diagonal).
+
+```{r Distributions, fig.cap="Results of the bivariate relations. Above the diagonal: zero-order correlation matrix; diagonal: density plots for each variable; below the diagonal: bivariate scatter plots for zero-order correlations. Solid regression lines represent linear regressions, dashed regression lines represent quadratic regressions. Calculated with the variables’ latent factor scores.", fig.height=8, fig.width=8, out.width=".9\\textwidth", fig.align='center', fig.pos = "!ht", warning=F}
+suppressWarnings(print(corr_plot))
+```
+
+Hypothesis 1 predicted that people reporting higher concerns about online privacy than others would also be less likely to share personal information online than others.
+Results revealed that the random intercepts of the two variables were significantly correlated (`r coeffs_txt(fit_riclpm, "cor_b_2", one_sided = TRUE)`). 
+Hence, respondents who---on average across all three waves---were more concerned about their privacy than others also shared slightly less personal information online.
+The effect was small.
+When looking at the standardized effect's confidence interval (i.e., $\beta$ = `r effect_std_ci[["est.std"]] %>% my_round("std")`, 95% CI [`r effect_std_ci[["ci.lower"]] %>% my_round("std")`, `r  effect_std_ci[["ci.upper"]] %>% my_round("std")`]), it was not significantly smaller than our SESOI of $beta$ = .10.
+Thus, Hypothesis 1 was supported.
+
+Hypothesis 2 proposed that if people perceived more concerns about their online privacy than they usually do, they would also share less personal information online than they usually do.
+Results revealed a small significant correlation (`r coeffs_txt(fit_riclpm, "cor_w_2", one_sided = TRUE)`), suggesting that if respondents were more concerned about their online privacy at T1 than usual, they also shared less personal information online at T1 than usual.
+In conclusion, the results supported Hypothesis 2.
+
+With Research Question 1.1, we analyzed the longitudinal relation of concerns about online privacy and the online sharing of personal information 6 months later. 
+No significant lagged effect across 6 months was found (`r coeffs_txt(fit_riclpm, "c1")`).
+With Research Question 1.2, we investigated the longitudinal relation of the online sharing of personal information and concerns about online privacy 6 months later, again revealing no significant effect (`r coeffs_txt(fit_riclpm, "a3")`).
+
+Hypothesis 3.1 predicted that people who perceived more privacy concerns than others would also hold more negative attitudes toward the online sharing of personal information than others. 
+The results revealed a medium-sized negative correlation between the two variables on the between-person level (`r coeffs_txt(fit_riclpm, "cor_b_1", one_sided = TRUE)`). 
+Thus, people who---on average across all three waves---reported being more concerned about their online privacy relative to the rest of the sample, were also substantially more likely to hold a more negative attitude toward the online sharing of personal information.
+The results therefore supported Hypothesis 3.1.
+Hypothesis 3.2 stated that people who held more positive attitudes toward the online sharing of personal information than others would also share more personal information online than others. 
+Results showed a very strong between-person correlation between the two variables (`r coeffs_txt(fit_riclpm, "cor_b_3", one_sided = TRUE)`). 
+In other words, when averaged across all three waves, if people had more positive attitudes toward the online sharing of personal information than others, they were much more likely to actually share personal information online.
+In conclusion, the results supported Hypothesis 3.2.
+
+Hypothesis 4.1 proposed that people who perceived more privacy concerns than usual would also hold more negative attitudes toward the online sharing of personal information than usual. 
+The results did not reveal a significant effect (`r coeffs_txt(fit_riclpm, "cor_w_1", one_sided = TRUE)`). 
+Hypothesis 4.2 proposed that people who held more positive attitudes toward the online sharing of personal information than usual would also share more personal information online than usual. 
+Results showed a moderate within-person correlation between the two variables (`r coeffs_txt(fit_riclpm, "cor_w_3", one_sided = TRUE)`), which indicates that when respondents had more positive attitudes at T1 than usual, they also shared more personal information than usual.
+In conclusion, the results supported Hypothesis 4.2.
+
+With Research Question 2.1, we analyzed the longitudinal relations of concerns about online privacy and positive attitudes toward the online sharing of personal information. 
+No significant effect was found (`r coeffs_txt(fit_riclpm, "b1")`).
+Regarding Research Question 2.2, again no significant longitudinal relations emerged between privacy attitudes and privacy concerns 6 months later (`r coeffs_txt(fit_riclpm, "a2")`).
+
+Research Question 3.1 asked whether changes in attitudes toward the online sharing of personal information would affect changes in personal information sharing 6 months later.
+No significant effect was found (`r coeffs_txt(fit_riclpm, "c2")`).
+Next, Research Question 3.2 asked whether changes in the online sharing of personal information would affect attitudes toward the online sharing of personal information 6 months later. 
+Again, no significant effect was found (`r coeffs_txt(fit_riclpm, "b3")`).
+
+Table \@ref(tab:Results1) presents an overview of all results.
+
+```{r Results1, results = "asis"}
+tab_results <- rbind(
+  td::coeffs_tab(fit_riclpm, 
+                 label_effect = c("c1", "a3", "b1", "a2", "c2", "b3"),
+                 as_text = TRUE),
+  td::coeffs_tab(fit_riclpm, 
+                 label_effect = c("cor_b_1", "cor_b_2", "cor_b_3",
+                                  "cor_w_1", "cor_w_2", "cor_w_3"), 
+                 as_text = TRUE,
+                 one_sided = TRUE)
+  ) %>%
+  .[-c(7:12), ] %>% # filter effects for first wave
+  mutate(Effect = c("Positive attitude -> privacy concern",
+                    "Information sharing -> privacy concern",
+                    "Privacy concern -> positive attitude",
+                    "Information sharing -> positive attitude",
+                    "Privacy concern -> information sharing",
+                    "Positive attitude -> information sharing",
+                    "Privacy concern <-> positive attitude",
+                    "Privacy concern <-> information sharing",
+                    "Positive attitude <-> information sharing",
+                    "Privacy concern <-> positive attitude ",
+                    "Privacy concern <-> information sharing ",
+                    "Positive attitude <-> information sharing ")) %>% 
+  mutate(Effect = ordered(Effect, levels = c(
+    "Privacy concern <-> information sharing",
+    "Privacy concern <-> positive attitude",
+    "Positive attitude <-> information sharing",
+    "Privacy concern <-> information sharing ",
+    "Privacy concern <-> positive attitude ",
+    "Positive attitude <-> information sharing ",
+    "Privacy concern -> information sharing",
+    "Information sharing -> privacy concern",
+    "Privacy concern -> positive attitude",
+    "Positive attitude -> privacy concern",
+    "Positive attitude -> information sharing",
+    "Information sharing -> positive attitude"
+  ))) %>% 
+  arrange(Effect) %>% 
+  select(Effect, b, ll, ul, beta, p)
+
+apa_table(
+  tab_results
+  , caption = "Parameter Estimates Obtained in the Random-Intercept Cross-Lagged Panel Model"
+  , note = paste0("The between-person correlations represent interpersonal relations. For example, results showed that people who were more concerned than others, averaged across all three waves, also shared less information than others. The within-person parameters reflect how intrapersonal changes in one variable are related to intra-personal changes in another. For example, results showed that if a person was more concerned at T1 than usual, they also shared less information than usual.")
+  , font_size = "small"
+  , stub_indents = list("Between-person correlations across all waves" = c(1:3),
+                        "Within-person correlations at T1" = c(4:6),
+                        "Within-person effects across 6 months" = c(7:12))
+  , align = c("l", rep("r", 6))
+  , escape = FALSE
+  , col_spanners = list(`95\\% CI` = c(3, 4))
+#  , placement = "h"
+)
+```
+
+# Discussion
+
+Most research on the privacy paradox suggests a significant small effect of privacy concerns on the online sharing of personal information [e.g., @baruhOnlinePrivacyConcerns2017]. 
+However, whereas the theoretical premise of the privacy paradox addresses a within-person _effect_,
+most empirical studies have analyzed only between-person _relations_.
+On the basis of a representative sample of the German population, from which three waves of data separated by 6 months were collected, we hence analyzed the privacy paradox by differentiating general between-person relations, short-term within-person relations, as well as long-term within-person effects.
+Together, this approach allows for informed inferences about the variables' causal relationship.
+
+The results of the between-person analyses showed that people who were more concerned about their privacy than others were slightly less likely to share personal information.
+In addition, people who were more concerned about their privacy than others also held substantially more negative attitudes toward disclosing personal information online.
+Notably, we found a very strong between-person correlation between attitudes toward information sharing and actual information sharing, which shows that typical online disclosure can be predicted precisely by a person's attitude.
+Taken together, the cross-sectional results are in line with the extant literature:
+The between-person correlation of privacy concerns and information sharing found in this study (i.e., $\beta$ = -.08) fall within the 95% confidence interval of the effect reported by @baruhOnlinePrivacyConcerns2017 (i.e., _r_ = -.13, 95% CI [-.07, -.18]). 
+Note that the between-person correlations reported here represent averaged measurements across three waves, which makes the findings more robust than typical one-shot measures.
+
+In conclusion, this study suggests that the privacy paradox does not exist on a between-person level.
+The differences between people with regard to their online information sharing behavior can be explained by differences in their privacy concerns to a small extent, and by differences in their privacy attitudes to a large extent.
+The more specific we become, the better we can explain online behavior: 
+Whereas privacy concerns are related only weakly to online information sharing [e.g., @baruhOnlinePrivacyConcerns2017], more specific risks perceptions are related to behavior more closely [e.g., @bolUnderstandingEffectsPersonalization2018; @yuMetaanalysisExplorePrivacy2020], whereas behavioral attitudes are the best predictors [@dienlinPrivacyParadoxRelic2015]. 
+
+The within-person results showed that when a person's privacy concerns increased, the same person also shared slightly less information online than usual.
+Moreover, people who developed more positive attitudes toward the online sharing of personal information than usual, also shared substantially more personal information online.
+Together, changes in concerns and attitudes are therefore related to changes in behavior, which speaks against the privacy paradox also on the within-person level. 
+
+We did not find any long-term effects, however.
+Changes in both privacy concerns and attitudes toward the online sharing of personal information were not related to any meaningful changes in the online sharing of personal information 6 months later (and vice versa).
+As an explanation, it might be the case that changes in privacy concern affect information sharing more immediately. 
+To test this assumption, we would need studies with shorter intervals [@keijsersParentalMonitoringAdolescent2016].
+Moreover, given that the directions of most longitudinal relations were in line with the between-person and within-person relations, 
+longitudinal effects might indeed take place, 
+but only that they are very small.
+Of course, it could also be that longterm longitudinal effects do not exist.
+
+## Limitations
+
+Some of the effect sizes reported in this study are potentially not large enough to refute the privacy paradox completely. 
+On the one hand, they could be a manifestation of the so-called "crud factor" [@meehlWhySummariesResearch1990, p. 204], which states that all psychosocial measures are related to one another to some extent.
+On the other hand, other factors such as expected benefits might play a more important role [@dienlinExtendedPrivacyCalculus2016].
+In conclusion, although our results suggest that privacy concerns and privacy attitudes are correlated with information sharing, the importance of privacy concerns should not be exaggerated.
+The effects could be larger, and other variables play a role as well.
+
+In this study we measured information sharing using self-reports. 
+However, self-reports of frequent and routine behaviors are often imprecise and unreliable [@scharkowAccuracySelfreportedInternet2016]. 
+This represents a profound limitation of our study. 
+Whenever possible, future studies should aim to collect objective observations of behavior. 
+
+Finally, please note that the hypotheses presented in this study were not formally preregistered.
+At the time when the study was conceived in 2014, we were not yet aware of the importance of preregistration.
+
+## Future Research
+
+Evidence of within-person longitudinal effects is still missing. 
+Although we found significant within-person correlations at T1, they were absent across the 6-month intervals.
+Together, this suggests that longitudinal effects might exist, but that they take place on a different time interval.
+Future research could hence probe different intervals.
+For theoretical reasons (e.g., due to availability heuristics), it is plausible to use short intervals;
+for statistical reasons (e.g., because of the high stability of privacy concerns), it would also make sense to test longer intervals  [@dormannOptimalTimeLags2015].
+
+Although we argue that in most circumstances privacy concerns and behavior should correlate modestly, the exact extent depends on a many boundary conditions.
+Future research should hence explicitly analyze different contexts and situations. 
+Building on @kokolakisPrivacyAttitudesPrivacy2017, we suggest to analyze the following boundary conditions: 
+
+ - Context (e.g., professional, social, commercial, or health-related);
+ - Situation (e.g., new, habitualized, or unexpected);
+ - Mood (e.g., positive vs. negative);
+ - Extent of control (high vs. low);
+ - Type of information processing applied (implicit, heuristic, or peripheral vs. explicit, analytic, or central);
+ - Existence of bias (e.g., overconfidence, optimism, comparative optimism, or hyperbolic discounting);
+ - Type of information (e.g., sensitive vs. superficial, biographic, or person-related);
+ - Benefit immediacy and risk diffusion (high vs. low). 
+
+Specifically, we encourage analyzing privacy behaviors also from a situational perspective, accounting for temporal needs, interpersonal perceptions, contextual cues, or characteristics of communication channels [@masurSituationalPrivacySelfdisclosure2018].
+For example, whereas general levels of information sharing are likely best explained by using privacy _concerns_, situational information sharing might be best explained by using privacy _heuristics_ [@sundarUnlockingPrivacyParadox2013]. 
+
+Next to these theory-related boundary conditions there are also methodological ones: 
+
+ - Analysis design (e.g., theoretical, experimental, questionnaire-based, interview-based, or anecdotal);
+ - Quality of measurement (high vs. low; low quality less likely to detect statistical significance);
+ - Sample size (small vs. large; small samples less likely to detect statistical significance);
+ - Statistical analysis (e.g., SEM vs. Regression; analyses without error control less likely to find statistical significance);
+ - Operationalization (e.g., concerns vs. risk perceptions vs. behavioral attitudes; the more specific, the stronger the relation). 
+ 
+We emphasize that when analyzing the privacy paradox we are likely dealing with small effects [@baruhOnlinePrivacyConcerns2017].
+Hence, to detect these small effects reliably we need large samples. 
+This is often not the case [@baruhOnlinePrivacyConcerns2017].
+In conclusion, it is crucial to use statistical designs that allow for sufficient statistical power.
+
+## Conclusion
+
+Being able to show that online behaviors are not paradoxical can be socially relevant.
+Consider the similar case of fear appeals and protective behavior, where there is also only a small correlation [@witteMetaanalysisFearAppeals2000].
+However, fear appeals are used in public campaigns nonetheless, oftentimes to much success [@wakefieldUseMassMedia2010].
+Likewise, proclaiming that the online sharing of personal information is not paradoxical and that concerns about online privacy matter, could lead to more cautious and reflective behavior.
+It is probably no coincidence that the General Data Protection Regulation, which strengthens the privacy rights of consumers, was passed in Europe, where privacy concerns are particularly pronounced [@europeancommissionDataProtectionSpecial2015].
+
+In sum, this study showed that when people were more concerned about their privacy, they also shared a little less personal information about themselves online.
+If respondents considered sharing personal information to be insensible, they disclosed substantially less information.
+Together, these findings do not support the existence of a privacy paradox, at least in this particular context and operationalization.
+No evidence of long-term effects was found, however.
+Further research is needed to understand the potential causal interplay of concerns, attitudes, and behavior.
+
+\newpage
+# References
+
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+
+<div id="refs"></div>

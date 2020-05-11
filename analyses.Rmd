@@ -1,0 +1,650 @@
+---
+title: "Analyzing the Privacy Paradox Using a Nationally Representative Three-Wave Panel Study"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 5
+    df_print: paged
+    code_folding: hide
+---
+
+```{r, echo=F, include=F}
+# defaults
+set.seed(170819)
+options(digits=3, width=120, max.print=100000)
+knitr::opts_chunk$set(echo=T, error=F, message=F, tidy=T, warning=F, cache=T)
+```
+
+```{r Packages, cache=F, results='hide'}
+# relevant packages
+devtools::install_github("tdienlin/td@v.0.0.2.5")
+required <- c("GGally", "ggplot2", "kableExtra", "knitr",
+              "lavaan", "lme4","magrittr", "MissMech", 
+              "papaja", "psych", "pwr", "MVN", "semTools", 
+              "sjstats", "tidyverse", "td")
+
+# load required libraries
+lapply(required, function(x) library(x, character.only = T))
+
+# export bib library
+r_refs("bibliography/r-references.bib")
+
+# first run "data_wranling.R", in order to create these objects
+d_wide <- read_csv("data/data_wide.csv")
+d_wide_all <- read_csv("data/data_wide_all.csv")
+d_long <- read_csv("data/data_long.csv")
+
+# Extract descriptives to report in paper
+desc <- d_wide %>% 
+  summarize_at(vars(ends_with("_m")), funs(mean(., na.rm = TRUE), sd(., na.rm = TRUE)))
+```
+
+In what follows, we report the models that were run to obtain the results reported in the manuscript. To see the underlying code, click on the button `code`.
+
+# Sociodemographics
+
+```{r}
+n_complete <- nrow(d_wide)
+age_m <- mean(d_wide$age)
+age_sd <- sd(d_wide$age)
+male_per <- mean(d_wide$male) - 1
+edu_col_per <- nrow(d_wide[d_wide$edu_num > 5, ]) / n_complete * 100
+tibble(
+  "N" = n_complete,
+  "Age" = age_m,
+  "Age SD" = age_sd,
+  "Male perc." = male_per,
+  "College perc." = edu_col_per
+  ) %>% 
+  kable() %>% 
+  kable_styling("striped")
+```
+
+# Analysis of Missing Values
+
+```{r cache=F}
+d_tmp <- select(d_wide, -contains("_m"), -contains("tim"), -contains("T4"), -contains("T5"), -contains("per"), -contains("use"), -c(id, age, edu, edu_num, male))
+test_mar <- TestMCARNormality(d_tmp)
+
+# print patterns
+as.data.frame(test_mar$patused)
+
+# non-parametric test
+(test_mar_p <- test_mar$pnormality)
+
+# calculate percentage of missing data
+na_per <- mean(c(d_wide$t1_na_per, d_wide$t2_na_per, d_wide$t3_na_per)) * 100
+```
+
+Visual inspection of the missing value patterns as well as the non-parametric test suggested that all missing values could be considered to be missing at random (_p_ `r test_mar$pnormality %>% td::my_round("p_txt")`).
+
+# Measures
+
+In what follows, we report the measures we collected, including their items, factorial validity, reliability, and ICC. For the measures' longitudinal invariance, see [additional analyses](analyses_additional.Rmd).
+
+## Concerns about online privacy
+### Items
+
+The following deals with things that can happen on the Internet.
+
+1. In general, how concerned are you about your privacy while using the Internet?
+2. Are you concerned about online organizations not being who they claim they are?
+3. Are you concerned about online identity theft?
+4. Are you concerned about people you do not know obtaining personal information about you from your online activities?
+5. Are you concerned that if you use your credit card to buy something on the Internet your credit card number will be obtained/intercepted by someone else?
+6. Are you concerned that an email you sent may be read by someone else besides the person you sent it to?
+7. Are you concerned that institutions or secret services could collect and analyze the data that you are disclosing on the Internet?
+8. Are you concerned that website providers are tracking your online activities?
+9. Are you concerned that you don’t know what other organizations or website providers are doing with you data?
+
+(NA = "no Internet user / no reply", 1 = "Not concerned at all" : 5 = "very concerned")
+
+### CFA
+
+```{r}
+# set-up
+name <- "pri_con"
+d_tmp <- select(d_wide, contains(paste0("t1_", name)), -contains("_m"))
+model <- '
+# create factors
+t1_pri_con_f =~ 1*t1_pri_con_f1 + a2*t1_pri_con_f2
+t2_pri_con_f =~ 1*t2_pri_con_f1 + a2*t2_pri_con_f2
+t3_pri_con_f =~ 1*t3_pri_con_f1 + a2*t3_pri_con_f2
+t1_pri_con_f1 =~ 1*t1_pri_con_04 + b2*t1_pri_con_05 + b3*t1_pri_con_06
+t1_pri_con_f2 =~ 1*t1_pri_con_07 + c2*t1_pri_con_08 + c3*t1_pri_con_09
+t2_pri_con_f1 =~ 1*t2_pri_con_04 + b2*t2_pri_con_05 + b3*t2_pri_con_06
+t2_pri_con_f2 =~ 1*t2_pri_con_07 + c2*t2_pri_con_08 + c3*t2_pri_con_09
+t3_pri_con_f1 =~ 1*t3_pri_con_04 + b2*t3_pri_con_05 + b3*t3_pri_con_06
+t3_pri_con_f2 =~ 1*t3_pri_con_07 + c2*t3_pri_con_08 + c3*t3_pri_con_09
+
+# error covariances
+t3_pri_con_04 ~~ t2_pri_con_04 + t1_pri_con_04
+t3_pri_con_05 ~~ t2_pri_con_05 + t1_pri_con_05
+t3_pri_con_06 ~~ t2_pri_con_06 + t1_pri_con_06
+t3_pri_con_07 ~~ t2_pri_con_07 + t1_pri_con_07
+t3_pri_con_08 ~~ t2_pri_con_08 + t1_pri_con_08
+t3_pri_con_09 ~~ t2_pri_con_09 + t1_pri_con_09
+t2_pri_con_04 ~~ t1_pri_con_04
+t2_pri_con_05 ~~ t1_pri_con_05 
+t2_pri_con_06 ~~ t1_pri_con_06
+t2_pri_con_07 ~~ t1_pri_con_07
+t2_pri_con_08 ~~ t1_pri_con_08
+t2_pri_con_09 ~~ t1_pri_con_09
+
+# factor covariances
+t1_pri_con_f ~~ t2_pri_con_f + t3_pri_con_f
+t2_pri_con_f ~~ t3_pri_con_f
+'
+assign(paste("fit", name, sep = "_"), cfa(model, d_wide, missing = "ML"))
+summary(get(paste("fit", name, sep = "_")), standardized = TRUE, fit.measures = TRUE)
+```
+
+### Reliability
+
+```{r}
+reliabilityL2(get(paste("fit", name, sep = "_")), paste("t1", name, "f", sep = "_"))
+reliabilityL2(get(paste("fit", name, sep = "_")), paste("t2", name, "f", sep = "_"))
+reliabilityL2(get(paste("fit", name, sep = "_")), paste("t3", name, "f", sep = "_"))
+```
+
+
+### ICC
+
+```{r}
+fit <- lmer(pri_con_m ~ 1 + (1 | id), filter(d_long, wave < 4))
+summary(fit)
+(icc_pri_con <- icc(fit))
+```
+
+## Attitude Toward Online Sharing of Personal Information
+### Items
+
+Now we will deal with information sharing on the Internet. Do you think that it is sensible to disclose the following pieces of information online, i.e., via the Internet?
+
+1. Financial information (bank data, account balances…)
+2. Medical information (health, medical records…)
+3. Second name
+4. First name
+5. Residence
+6. Street and house number
+7. Email address
+8. Phone number
+9. Photos (of you)
+10. Job (past and present)
+11. Education
+
+(NA = “no Internet user / no reply”, 1 = "not sensible at all", 2 = "somewhat not sensible", 3 = "in part", 4 = "somewhat sensible", 5 = "very sensible")
+
+### CFA
+
+```{r}
+name <- "inf_sha_att"
+d_tmp <- select(d_wide, contains(paste0("t1_", name)), -contains("_m"))
+model <- '
+# create factors
+t1_inf_sha_att_f =~ 1*t1_inf_sha_att_f1 + o2*t1_inf_sha_att_f2 + o3*t1_inf_sha_att_f3 + o4*t1_inf_sha_att_f4 + o5*t1_inf_sha_att_f5
+t2_inf_sha_att_f =~ 1*t2_inf_sha_att_f1 + o2*t2_inf_sha_att_f2 + o3*t2_inf_sha_att_f3 + o4*t2_inf_sha_att_f4 + o5*t2_inf_sha_att_f5
+t3_inf_sha_att_f =~ 1*t3_inf_sha_att_f1 + o2*t3_inf_sha_att_f2 + o3*t3_inf_sha_att_f3 + o4*t3_inf_sha_att_f4 + o5*t3_inf_sha_att_f5
+t1_inf_sha_att_f1 =~ 1*t1_inf_sha_att_01 + j2*t1_inf_sha_att_02
+t1_inf_sha_att_f2 =~ 1*t1_inf_sha_att_03 + k2*t1_inf_sha_att_04
+t1_inf_sha_att_f3 =~ 1*t1_inf_sha_att_05 + l2*t1_inf_sha_att_06
+t1_inf_sha_att_f4 =~ 1*t1_inf_sha_att_07 + m2*t1_inf_sha_att_08
+t1_inf_sha_att_f5 =~ 1*t1_inf_sha_att_10 + n2*t1_inf_sha_att_11
+t2_inf_sha_att_f1 =~ 1*t2_inf_sha_att_01 + j2*t2_inf_sha_att_02
+t2_inf_sha_att_f2 =~ 1*t2_inf_sha_att_03 + k2*t2_inf_sha_att_04
+t2_inf_sha_att_f3 =~ 1*t2_inf_sha_att_05 + l2*t2_inf_sha_att_06
+t2_inf_sha_att_f4 =~ 1*t2_inf_sha_att_07 + m2*t2_inf_sha_att_08
+t2_inf_sha_att_f5 =~ 1*t2_inf_sha_att_10 + n2*t2_inf_sha_att_11
+t3_inf_sha_att_f1 =~ 1*t3_inf_sha_att_01 + j2*t3_inf_sha_att_02
+t3_inf_sha_att_f2 =~ 1*t3_inf_sha_att_03 + k2*t3_inf_sha_att_04
+t3_inf_sha_att_f3 =~ 1*t3_inf_sha_att_05 + l2*t3_inf_sha_att_06
+t3_inf_sha_att_f4 =~ 1*t3_inf_sha_att_07 + m2*t3_inf_sha_att_08
+t3_inf_sha_att_f5 =~ 1*t3_inf_sha_att_10 + n2*t3_inf_sha_att_11
+
+# factor covariance
+t1_inf_sha_att_f ~~ t2_inf_sha_att_f + t3_inf_sha_att_f
+t2_inf_sha_att_f ~~ t3_inf_sha_att_f
+
+# item error covariance
+t1_inf_sha_att_01 ~~ t2_inf_sha_att_01 + t3_inf_sha_att_01
+t2_inf_sha_att_01 ~~ t3_inf_sha_att_01
+t1_inf_sha_att_02 ~~ t2_inf_sha_att_02 + t3_inf_sha_att_02
+t2_inf_sha_att_02 ~~ t3_inf_sha_att_02
+t1_inf_sha_att_03 ~~ t2_inf_sha_att_03 + t3_inf_sha_att_03
+t2_inf_sha_att_03 ~~ t3_inf_sha_att_03
+t1_inf_sha_att_04 ~~ t2_inf_sha_att_04 + t3_inf_sha_att_04
+t2_inf_sha_att_04 ~~ t3_inf_sha_att_04
+t1_inf_sha_att_05 ~~ t2_inf_sha_att_05 + t3_inf_sha_att_05
+t2_inf_sha_att_05 ~~ t3_inf_sha_att_05
+t1_inf_sha_att_06 ~~ t2_inf_sha_att_06 + t3_inf_sha_att_06
+t2_inf_sha_att_06 ~~ t3_inf_sha_att_06
+t1_inf_sha_att_07 ~~ t2_inf_sha_att_07 + t3_inf_sha_att_07
+t2_inf_sha_att_07 ~~ t3_inf_sha_att_07
+t1_inf_sha_att_08 ~~ t2_inf_sha_att_08 + t3_inf_sha_att_08
+t2_inf_sha_att_08 ~~ t3_inf_sha_att_08
+t1_inf_sha_att_10 ~~ t2_inf_sha_att_10 + t3_inf_sha_att_10
+t2_inf_sha_att_10 ~~ t3_inf_sha_att_10
+t1_inf_sha_att_11 ~~ t2_inf_sha_att_11 + t3_inf_sha_att_11
+t2_inf_sha_att_11 ~~ t3_inf_sha_att_11
+'
+assign(paste("fit", name, sep = "_"), cfa(model, d_wide, missing = "ML"))
+summary(get(paste("fit", name, sep = "_")), standardized = TRUE, fit.measures = TRUE)
+```
+
+### Reliability
+
+```{r}
+reliabilityL2(get(paste("fit", name, sep = "_")), paste("t1", name, "f", sep = "_"))
+reliabilityL2(get(paste("fit", name, sep = "_")), paste("t2", name, "f", sep = "_"))
+reliabilityL2(get(paste("fit", name, sep = "_")), paste("t3", name, "f", sep = "_"))
+```
+
+### ICC
+
+```{r}
+fit <- lmer(inf_sha_att_m ~ 1 + (1 | id), filter(d_long, wave < 4))
+summary(fit)
+(icc_inf_sha_att <- icc(fit))
+```
+
+## Online Sharing of Personal Information
+### Items
+
+In the following, please indicate how often you disclose the following information on the Internet. How often do you disclose the following pieces of information online, i.e., on the Internet?
+
+1. Financial information (bank data, account balances…)
+2. Medical information (health, medical records…)
+3. Second name
+4. First name
+5. Residence
+6. Street and house number
+7. Email address
+8. Phone number
+9. Photos (of you)
+10. Job (past and present)
+11. Education
+
+(NA = “no Internet user / no reply”, 1 = "every day", 2 = "weekly", 3 = "monthly", 4 = "less than that", 5 = "never")
+
+### CFA
+
+```{r}
+name <- "inf_sha_beh"
+d_tmp <- select(d_wide, contains(paste0("t1_", name)), -contains("_m"))
+model <- '
+# create factors
+t1_inf_sha_beh_f =~ 1*t1_inf_sha_beh_f1 + o2*t1_inf_sha_beh_f2 + o3*t1_inf_sha_beh_f3 + o4*t1_inf_sha_beh_f4 + o5*t1_inf_sha_beh_f5
+t2_inf_sha_beh_f =~ 1*t2_inf_sha_beh_f1 + o2*t2_inf_sha_beh_f2 + o3*t2_inf_sha_beh_f3 + o4*t2_inf_sha_beh_f4 + o5*t2_inf_sha_beh_f5
+t3_inf_sha_beh_f =~ 1*t3_inf_sha_beh_f1 + o2*t3_inf_sha_beh_f2 + o3*t3_inf_sha_beh_f3 + o4*t3_inf_sha_beh_f4 + o5*t3_inf_sha_beh_f5
+t1_inf_sha_beh_f1 =~ 1*t1_inf_sha_beh_01 + j2*t1_inf_sha_beh_02
+t1_inf_sha_beh_f2 =~ 1*t1_inf_sha_beh_03 + k2*t1_inf_sha_beh_04
+t1_inf_sha_beh_f3 =~ 1*t1_inf_sha_beh_05 + l2*t1_inf_sha_beh_06
+t1_inf_sha_beh_f4 =~ 1*t1_inf_sha_beh_07 + m2*t1_inf_sha_beh_08
+t1_inf_sha_beh_f5 =~ 1*t1_inf_sha_beh_10 + n2*t1_inf_sha_beh_11
+t2_inf_sha_beh_f1 =~ 1*t2_inf_sha_beh_01 + j2*t2_inf_sha_beh_02
+t2_inf_sha_beh_f2 =~ 1*t2_inf_sha_beh_03 + k2*t2_inf_sha_beh_04
+t2_inf_sha_beh_f3 =~ 1*t2_inf_sha_beh_05 + l2*t2_inf_sha_beh_06
+t2_inf_sha_beh_f4 =~ 1*t2_inf_sha_beh_07 + m2*t2_inf_sha_beh_08
+t2_inf_sha_beh_f5 =~ 1*t2_inf_sha_beh_10 + n2*t2_inf_sha_beh_11
+t3_inf_sha_beh_f1 =~ 1*t3_inf_sha_beh_01 + j2*t3_inf_sha_beh_02
+t3_inf_sha_beh_f2 =~ 1*t3_inf_sha_beh_03 + k2*t3_inf_sha_beh_04
+t3_inf_sha_beh_f3 =~ 1*t3_inf_sha_beh_05 + l2*t3_inf_sha_beh_06
+t3_inf_sha_beh_f4 =~ 1*t3_inf_sha_beh_07 + m2*t3_inf_sha_beh_08
+t3_inf_sha_beh_f5 =~ 1*t3_inf_sha_beh_10 + n2*t3_inf_sha_beh_11
+
+# factor covariance
+t1_inf_sha_beh_f ~~ t2_inf_sha_beh_f + t3_inf_sha_beh_f
+t2_inf_sha_beh_f ~~ t3_inf_sha_beh_f
+
+# item error covariance
+t1_inf_sha_beh_01 ~~ t2_inf_sha_beh_01 + t3_inf_sha_beh_01
+t2_inf_sha_beh_01 ~~ t3_inf_sha_beh_01
+t1_inf_sha_beh_02 ~~ t2_inf_sha_beh_02 + t3_inf_sha_beh_02
+t2_inf_sha_beh_02 ~~ t3_inf_sha_beh_02
+t1_inf_sha_beh_03 ~~ t2_inf_sha_beh_03 + t3_inf_sha_beh_03
+t2_inf_sha_beh_03 ~~ t3_inf_sha_beh_03
+t1_inf_sha_beh_04 ~~ t2_inf_sha_beh_04 + t3_inf_sha_beh_04
+t2_inf_sha_beh_04 ~~ t3_inf_sha_beh_04
+t1_inf_sha_beh_05 ~~ t2_inf_sha_beh_05 + t3_inf_sha_beh_05
+t2_inf_sha_beh_05 ~~ t3_inf_sha_beh_05
+t1_inf_sha_beh_06 ~~ t2_inf_sha_beh_06 + t3_inf_sha_beh_06
+t2_inf_sha_beh_06 ~~ t3_inf_sha_beh_06
+t1_inf_sha_beh_07 ~~ t2_inf_sha_beh_07 + t3_inf_sha_beh_07
+t2_inf_sha_beh_07 ~~ t3_inf_sha_beh_07
+t1_inf_sha_beh_08 ~~ t2_inf_sha_beh_08 + t3_inf_sha_beh_08
+t2_inf_sha_beh_08 ~~ t3_inf_sha_beh_08
+t1_inf_sha_beh_10 ~~ t2_inf_sha_beh_10 + t3_inf_sha_beh_10
+t2_inf_sha_beh_10 ~~ t3_inf_sha_beh_10
+t1_inf_sha_beh_11 ~~ t2_inf_sha_beh_11 + t3_inf_sha_beh_11
+t2_inf_sha_beh_11 ~~ t3_inf_sha_beh_11
+'
+assign(paste("fit", name, sep = "_"), cfa(model, d_wide, missing = "ML"))
+summary(get(paste("fit", name, sep = "_")), standardized = TRUE, fit.measures = TRUE)
+```
+
+### Reliability
+
+```{r}
+reliabilityL2(get(paste("fit", name, sep = "_")), paste("t1", name, "f", sep = "_"))
+reliabilityL2(get(paste("fit", name, sep = "_")), paste("t2", name, "f", sep = "_"))
+reliabilityL2(get(paste("fit", name, sep = "_")), paste("t3", name, "f", sep = "_"))
+```
+
+### ICC
+
+```{r}
+fit <- lmer(inf_sha_beh_m ~ 1 + (1 | id), filter(d_long, wave < 4))
+summary(fit)
+(icc_inf_sha_beh <- icc(fit))
+```
+
+## Baseline Model
+
+We next estimate a model containing all measures, which is then used to extract factor scores. 
+
+```{r CFA_All}
+name <- "all_vars"
+model <- '
+# Privacy Concerns
+# create factors
+t1_pri_con_f =~ 1*t1_pri_con_f1 + a2*t1_pri_con_f2
+t2_pri_con_f =~ 1*t2_pri_con_f1 + a2*t2_pri_con_f2
+t3_pri_con_f =~ 1*t3_pri_con_f1 + a2*t3_pri_con_f2
+t1_pri_con_f1 =~ 1*t1_pri_con_04 + b2*t1_pri_con_05 + b3*t1_pri_con_06
+t1_pri_con_f2 =~ 1*t1_pri_con_07 + c2*t1_pri_con_08 + c3*t1_pri_con_09
+t2_pri_con_f1 =~ 1*t2_pri_con_04 + b2*t2_pri_con_05 + b3*t2_pri_con_06
+t2_pri_con_f2 =~ 1*t2_pri_con_07 + c2*t2_pri_con_08 + c3*t2_pri_con_09
+t3_pri_con_f1 =~ 1*t3_pri_con_04 + b2*t3_pri_con_05 + b3*t3_pri_con_06
+t3_pri_con_f2 =~ 1*t3_pri_con_07 + c2*t3_pri_con_08 + c3*t3_pri_con_09
+
+# error covariances
+t3_pri_con_04 ~~ t2_pri_con_04 + t1_pri_con_04
+t3_pri_con_05 ~~ t2_pri_con_05 + t1_pri_con_05
+t3_pri_con_06 ~~ t2_pri_con_06 + t1_pri_con_06
+t3_pri_con_07 ~~ t2_pri_con_07 + t1_pri_con_07
+t3_pri_con_08 ~~ t2_pri_con_08 + t1_pri_con_08
+t3_pri_con_09 ~~ t2_pri_con_09 + t1_pri_con_09
+t2_pri_con_04 ~~ t1_pri_con_04
+t2_pri_con_05 ~~ t1_pri_con_05 
+t2_pri_con_06 ~~ t1_pri_con_06
+t2_pri_con_07 ~~ t1_pri_con_07
+t2_pri_con_08 ~~ t1_pri_con_08
+t2_pri_con_09 ~~ t1_pri_con_09
+
+# factor covariances
+t1_pri_con_f ~~ t2_pri_con_f + t3_pri_con_f
+t2_pri_con_f ~~ t3_pri_con_f
+
+# Information Sharing Attitude
+# create factors
+t1_inf_sha_att_f =~ 1*t1_inf_sha_att_f1 + d2*t1_inf_sha_att_f2 + d3*t1_inf_sha_att_f3 + d4*t1_inf_sha_att_f4 + d5*t1_inf_sha_att_f5
+t2_inf_sha_att_f =~ 1*t2_inf_sha_att_f1 + d2*t2_inf_sha_att_f2 + d3*t2_inf_sha_att_f3 + d4*t2_inf_sha_att_f4 + d5*t2_inf_sha_att_f5
+t3_inf_sha_att_f =~ 1*t3_inf_sha_att_f1 + d2*t3_inf_sha_att_f2 + d3*t3_inf_sha_att_f3 + d4*t3_inf_sha_att_f4 + d5*t3_inf_sha_att_f5
+t1_inf_sha_att_f1 =~ 1*t1_inf_sha_att_01 + e*t1_inf_sha_att_02
+t1_inf_sha_att_f2 =~ 1*t1_inf_sha_att_03 + f*t1_inf_sha_att_04
+t1_inf_sha_att_f3 =~ 1*t1_inf_sha_att_05 + g*t1_inf_sha_att_06
+t1_inf_sha_att_f4 =~ 1*t1_inf_sha_att_07 + h*t1_inf_sha_att_08
+t1_inf_sha_att_f5 =~ 1*t1_inf_sha_att_10 + i*t1_inf_sha_att_11
+t2_inf_sha_att_f1 =~ 1*t2_inf_sha_att_01 + e*t2_inf_sha_att_02
+t2_inf_sha_att_f2 =~ 1*t2_inf_sha_att_03 + f*t2_inf_sha_att_04
+t2_inf_sha_att_f3 =~ 1*t2_inf_sha_att_05 + g*t2_inf_sha_att_06
+t2_inf_sha_att_f4 =~ 1*t2_inf_sha_att_07 + h*t2_inf_sha_att_08
+t2_inf_sha_att_f5 =~ 1*t2_inf_sha_att_10 + i*t2_inf_sha_att_11
+t3_inf_sha_att_f1 =~ 1*t3_inf_sha_att_01 + e*t3_inf_sha_att_02
+t3_inf_sha_att_f2 =~ 1*t3_inf_sha_att_03 + f*t3_inf_sha_att_04
+t3_inf_sha_att_f3 =~ 1*t3_inf_sha_att_05 + g*t3_inf_sha_att_06
+t3_inf_sha_att_f4 =~ 1*t3_inf_sha_att_07 + h*t3_inf_sha_att_08
+t3_inf_sha_att_f5 =~ 1*t3_inf_sha_att_10 + i*t3_inf_sha_att_11
+
+# factor covariance
+t1_inf_sha_att_f ~~ t2_inf_sha_att_f + t3_inf_sha_att_f
+t2_inf_sha_att_f ~~ t3_inf_sha_att_f
+
+# item error covariance
+t1_inf_sha_att_01 ~~ t2_inf_sha_att_01 + t3_inf_sha_att_01
+t2_inf_sha_att_01 ~~ t3_inf_sha_att_01
+t1_inf_sha_att_02 ~~ t2_inf_sha_att_02 + t3_inf_sha_att_02
+t2_inf_sha_att_02 ~~ t3_inf_sha_att_02
+t1_inf_sha_att_03 ~~ t2_inf_sha_att_03 + t3_inf_sha_att_03
+t2_inf_sha_att_03 ~~ t3_inf_sha_att_03
+t1_inf_sha_att_04 ~~ t2_inf_sha_att_04 + t3_inf_sha_att_04
+t2_inf_sha_att_04 ~~ t3_inf_sha_att_04
+t1_inf_sha_att_05 ~~ t2_inf_sha_att_05 + t3_inf_sha_att_05
+t2_inf_sha_att_05 ~~ t3_inf_sha_att_05
+t1_inf_sha_att_06 ~~ t2_inf_sha_att_06 + t3_inf_sha_att_06
+t2_inf_sha_att_06 ~~ t3_inf_sha_att_06
+t1_inf_sha_att_07 ~~ t2_inf_sha_att_07 + t3_inf_sha_att_07
+t2_inf_sha_att_07 ~~ t3_inf_sha_att_07
+t1_inf_sha_att_08 ~~ t2_inf_sha_att_08 + t3_inf_sha_att_08
+t2_inf_sha_att_08 ~~ t3_inf_sha_att_08
+t1_inf_sha_att_10 ~~ t2_inf_sha_att_10 + t3_inf_sha_att_10
+t2_inf_sha_att_10 ~~ t3_inf_sha_att_10
+t1_inf_sha_att_11 ~~ t2_inf_sha_att_11 + t3_inf_sha_att_11
+t2_inf_sha_att_11 ~~ t3_inf_sha_att_11
+
+# information sharing behavior
+# create factors
+t1_inf_sha_beh_f =~ 1*t1_inf_sha_beh_f1 + o2*t1_inf_sha_beh_f2 + o3*t1_inf_sha_beh_f3 + o4*t1_inf_sha_beh_f4 + o5*t1_inf_sha_beh_f5
+t2_inf_sha_beh_f =~ 1*t2_inf_sha_beh_f1 + o2*t2_inf_sha_beh_f2 + o3*t2_inf_sha_beh_f3 + o4*t2_inf_sha_beh_f4 + o5*t2_inf_sha_beh_f5
+t3_inf_sha_beh_f =~ 1*t3_inf_sha_beh_f1 + o2*t3_inf_sha_beh_f2 + o3*t3_inf_sha_beh_f3 + o4*t3_inf_sha_beh_f4 + o5*t3_inf_sha_beh_f5
+t1_inf_sha_beh_f1 =~ 1*t1_inf_sha_beh_01 + j2*t1_inf_sha_beh_02
+t1_inf_sha_beh_f2 =~ 1*t1_inf_sha_beh_03 + k2*t1_inf_sha_beh_04
+t1_inf_sha_beh_f3 =~ 1*t1_inf_sha_beh_05 + l2*t1_inf_sha_beh_06
+t1_inf_sha_beh_f4 =~ 1*t1_inf_sha_beh_07 + m2*t1_inf_sha_beh_08
+t1_inf_sha_beh_f5 =~ 1*t1_inf_sha_beh_10 + n2*t1_inf_sha_beh_11
+t2_inf_sha_beh_f1 =~ 1*t2_inf_sha_beh_01 + j2*t2_inf_sha_beh_02
+t2_inf_sha_beh_f2 =~ 1*t2_inf_sha_beh_03 + k2*t2_inf_sha_beh_04
+t2_inf_sha_beh_f3 =~ 1*t2_inf_sha_beh_05 + l2*t2_inf_sha_beh_06
+t2_inf_sha_beh_f4 =~ 1*t2_inf_sha_beh_07 + m2*t2_inf_sha_beh_08
+t2_inf_sha_beh_f5 =~ 1*t2_inf_sha_beh_10 + n2*t2_inf_sha_beh_11
+t3_inf_sha_beh_f1 =~ 1*t3_inf_sha_beh_01 + j2*t3_inf_sha_beh_02
+t3_inf_sha_beh_f2 =~ 1*t3_inf_sha_beh_03 + k2*t3_inf_sha_beh_04
+t3_inf_sha_beh_f3 =~ 1*t3_inf_sha_beh_05 + l2*t3_inf_sha_beh_06
+t3_inf_sha_beh_f4 =~ 1*t3_inf_sha_beh_07 + m2*t3_inf_sha_beh_08
+t3_inf_sha_beh_f5 =~ 1*t3_inf_sha_beh_10 + n2*t3_inf_sha_beh_11
+
+# factor covariance
+t1_inf_sha_beh_f ~~ t2_inf_sha_beh_f + t3_inf_sha_beh_f
+t2_inf_sha_beh_f ~~ t3_inf_sha_beh_f
+
+# item error covariance
+t1_inf_sha_beh_01 ~~ t2_inf_sha_beh_01 + t3_inf_sha_beh_01
+t2_inf_sha_beh_01 ~~ t3_inf_sha_beh_01
+t1_inf_sha_beh_02 ~~ t2_inf_sha_beh_02 + t3_inf_sha_beh_02
+t2_inf_sha_beh_02 ~~ t3_inf_sha_beh_02
+t1_inf_sha_beh_03 ~~ t2_inf_sha_beh_03 + t3_inf_sha_beh_03
+t2_inf_sha_beh_03 ~~ t3_inf_sha_beh_03
+t1_inf_sha_beh_04 ~~ t2_inf_sha_beh_04 + t3_inf_sha_beh_04
+t2_inf_sha_beh_04 ~~ t3_inf_sha_beh_04
+t1_inf_sha_beh_05 ~~ t2_inf_sha_beh_05 + t3_inf_sha_beh_05
+t2_inf_sha_beh_05 ~~ t3_inf_sha_beh_05
+t1_inf_sha_beh_06 ~~ t2_inf_sha_beh_06 + t3_inf_sha_beh_06
+t2_inf_sha_beh_06 ~~ t3_inf_sha_beh_06
+t1_inf_sha_beh_07 ~~ t2_inf_sha_beh_07 + t3_inf_sha_beh_07
+t2_inf_sha_beh_07 ~~ t3_inf_sha_beh_07
+t1_inf_sha_beh_08 ~~ t2_inf_sha_beh_08 + t3_inf_sha_beh_08
+t2_inf_sha_beh_08 ~~ t3_inf_sha_beh_08
+t1_inf_sha_beh_10 ~~ t2_inf_sha_beh_10 + t3_inf_sha_beh_10
+t2_inf_sha_beh_10 ~~ t3_inf_sha_beh_10
+t1_inf_sha_beh_11 ~~ t2_inf_sha_beh_11 + t3_inf_sha_beh_11
+t2_inf_sha_beh_11 ~~ t3_inf_sha_beh_11
+
+## Correlations Attitude and Behavior-Items
+t1_inf_sha_beh_01 ~~ t1_inf_sha_att_01
+t1_inf_sha_beh_02 ~~ t1_inf_sha_att_02
+t1_inf_sha_beh_03 ~~ t1_inf_sha_att_03
+t1_inf_sha_beh_04 ~~ t1_inf_sha_att_04
+t1_inf_sha_beh_05 ~~ t1_inf_sha_att_05
+t1_inf_sha_beh_06 ~~ t1_inf_sha_att_06
+t1_inf_sha_beh_07 ~~ t1_inf_sha_att_07
+t1_inf_sha_beh_08 ~~ t1_inf_sha_att_08
+t1_inf_sha_beh_10 ~~ t1_inf_sha_att_10
+t1_inf_sha_beh_11 ~~ t1_inf_sha_att_11
+t2_inf_sha_beh_01 ~~ t2_inf_sha_att_01
+t2_inf_sha_beh_02 ~~ t2_inf_sha_att_02
+t2_inf_sha_beh_03 ~~ t2_inf_sha_att_03
+t2_inf_sha_beh_04 ~~ t2_inf_sha_att_04
+t2_inf_sha_beh_05 ~~ t2_inf_sha_att_05
+t2_inf_sha_beh_06 ~~ t2_inf_sha_att_06
+t2_inf_sha_beh_07 ~~ t2_inf_sha_att_07
+t2_inf_sha_beh_08 ~~ t2_inf_sha_att_08
+t2_inf_sha_beh_10 ~~ t2_inf_sha_att_10
+t2_inf_sha_beh_11 ~~ t2_inf_sha_att_11
+t3_inf_sha_beh_01 ~~ t3_inf_sha_att_01
+t3_inf_sha_beh_02 ~~ t3_inf_sha_att_02
+t3_inf_sha_beh_03 ~~ t3_inf_sha_att_03
+t3_inf_sha_beh_04 ~~ t3_inf_sha_att_04
+t3_inf_sha_beh_05 ~~ t3_inf_sha_att_05
+t3_inf_sha_beh_06 ~~ t3_inf_sha_att_06
+t3_inf_sha_beh_07 ~~ t3_inf_sha_att_07
+t3_inf_sha_beh_08 ~~ t3_inf_sha_att_08
+t3_inf_sha_beh_10 ~~ t3_inf_sha_att_10
+t3_inf_sha_beh_11 ~~ t3_inf_sha_att_11
+'
+assign(paste("fit", name, sep = "_"), cfa(model, d_wide, missing = "ML"))
+summary(get(paste("fit", name, sep = "_")), standardized = TRUE, fit.measures = TRUE)
+```
+
+Extract factor scores.
+
+```{r}
+d_fs <- lavPredict(get(paste("fit", name, sep = "_")), type = "ov") %>% 
+  as.data.frame() %>% 
+  mutate(t1_pri_con_fs = rowMeans(select(., starts_with("t1_pri"))),
+         t2_pri_con_fs = rowMeans(select(., starts_with("t2_pri"))),
+         t3_pri_con_fs = rowMeans(select(., starts_with("t3_pri"))),
+         t1_inf_sha_att_fs = rowMeans(select(., starts_with("t1_inf_sha_att"))),
+         t2_inf_sha_att_fs = rowMeans(select(., starts_with("t2_inf_sha_att"))),
+         t3_inf_sha_att_fs = rowMeans(select(., starts_with("t3_inf_sha_att"))),
+         t1_inf_sha_beh_fs = rowMeans(select(., starts_with("t1_inf_sha_beh"))),
+         t2_inf_sha_beh_fs = rowMeans(select(., starts_with("t2_inf_sha_beh"))),
+         t3_inf_sha_beh_fs = rowMeans(select(., starts_with("t3_inf_sha_beh")))
+         ) %>% 
+  select(contains("_fs"))
+d_wide <- cbind(d_fs, d_wide)
+```
+
+# Power Analyses
+
+```{r power}
+alpha <- .05
+power <- .95
+sesoi <- .1
+n <- n_complete
+n_apriori <- pwr.r.test(r = sesoi, sig.level = alpha, power = power)$n
+power_achieved_h <- pwr.r.test(r = sesoi, sig.level = alpha, n = n, alternative = "greater")$power
+alpha_balanced_h <- balance_errors(sesoi, n, one_tailed = TRUE)
+power_balanced_h <- 1 - alpha_balanced_h
+power_achieved_rq <- pwr.r.test(r = sesoi, sig.level = alpha, n = n)$power
+alpha_balanced_rq <- balance_errors(sesoi, n, one_tailed = FALSE)
+power_balanced_rq <- 1 - alpha_balanced_rq
+```
+
+A-priori power analyses revealed that N = `r n_apriori` people would be needed to find effects with a size of _r_ = `r sesoi` with a power of `r power`.
+
+Overall, the data of `r n` respondents could be used for our analyses. As a result, alpha and beta errors were balanced when using an alpha of `r alpha_balanced_h %>% round(3)`, resulting in an achieved power of `r power_balanced_h %>% round(3)`.
+
+# Results
+
+In what follows, please find all information about our final model we present in the paper.
+
+## Correlation matrix and distributions
+
+```{r Corrplot, fig.height = 8, fig.width = 8, size=5}
+colnames(d_fs) <- c("Privacy\nconcerns\nT1", "Privacy\nconcerns\nT2" , "Privacy\nconcerns\nT3",
+                    "Positive\nattitude\nT1", "Positive\nattitude\nT2" , "Positive\nattitude\nT3",
+                    "Information\nsharing\nT1", "Information\nsharing\nT2" , "Information\nsharing\nT3")
+
+corr_plot <- ggpairs(d_fs,
+                     lower = list(continuous = wrap(td::scat_plot, coords = c(1, 5, 1, 5)))) + 
+  theme_bw()
+print(corr_plot)
+```
+
+## Visualization of Model
+
+```{r, fig.cap="Visual representation of the estimated random-intercept cross-lagged panel model (RI-CLPM)."}
+knitr::include_graphics("figures/model_7.png")
+```
+
+## Assumptions
+
+We first test the assumption of multivariate normal distribution.
+
+```{r multivardis}
+mult_norm_test <- mvn(d_fs)
+print(mult_norm_test)
+```
+
+Results show that the assumption of multivariate normal distribution was violated. Hence, it'd be preferable to conduct robust Maximum Likelihood Estimation. However, using robust estimation it is not possible to run SEM on all data using Full Information Maximum Likehoood (FIML). Given that we consider it more important to include as much information as possible and that estimators often produce similar results, we decided to estimate the following models using regular maximum likehood.
+
+## RI-CLPM
+
+In what follows, please find the results of the main model we report in the paper.
+
+```{r}
+model <- '
+# between relations
+pri_con_b =~ 1*t1_pri_con_fs + 1*t2_pri_con_fs + 1*t3_pri_con_fs
+inf_sha_beh_b =~ 1*t1_inf_sha_beh_fs + 1*t2_inf_sha_beh_fs + 1*t3_inf_sha_beh_fs
+inf_sha_att_b =~ 1*t1_inf_sha_att_fs + 1*t2_inf_sha_att_fs + 1*t3_inf_sha_att_fs
+
+# within person changes
+t1_pri_con_w =~ 1*t1_pri_con_fs
+t2_pri_con_w =~ 1*t2_pri_con_fs
+t3_pri_con_w =~ 1*t3_pri_con_fs
+t1_inf_sha_beh_w =~ 1*t1_inf_sha_beh_fs
+t2_inf_sha_beh_w =~ 1*t2_inf_sha_beh_fs
+t3_inf_sha_beh_w =~ 1*t3_inf_sha_beh_fs
+t1_inf_sha_att_w =~ 1*t1_inf_sha_att_fs
+t2_inf_sha_att_w =~ 1*t2_inf_sha_att_fs
+t3_inf_sha_att_w =~ 1*t3_inf_sha_att_fs
+
+# within person effects
+t2_pri_con_w ~ a1*t1_pri_con_w + a2*t1_inf_sha_att_w + a3*t1_inf_sha_beh_w
+t2_inf_sha_att_w ~ b1*t1_pri_con_w + b2*t1_inf_sha_att_w + b3*t1_inf_sha_beh_w
+t2_inf_sha_beh_w ~ c1*t1_pri_con_w + c2*t1_inf_sha_att_w + c3*t1_inf_sha_beh_w
+t3_pri_con_w ~ a1*t2_pri_con_w + a2*t2_inf_sha_att_w + a3*t2_inf_sha_beh_w
+t3_inf_sha_att_w ~ b1*t2_pri_con_w + b2*t2_inf_sha_att_w + b3*t2_inf_sha_beh_w
+t3_inf_sha_beh_w ~ c1*t2_pri_con_w + c2*t2_inf_sha_att_w + c3*t2_inf_sha_beh_w
+
+# covariances
+pri_con_b ~~ cor_b_1*inf_sha_att_b + cor_b_2*inf_sha_beh_b
+inf_sha_att_b ~~ cor_b_3*inf_sha_beh_b
+t1_pri_con_w ~~ cor_w_1*t1_inf_sha_att_w + cor_w_2*t1_inf_sha_beh_w
+t1_inf_sha_att_w ~~ cor_w_3*t1_inf_sha_beh_w
+t2_pri_con_w ~~ a*t2_inf_sha_att_w + b*t2_inf_sha_beh_w
+t2_inf_sha_att_w ~~ c*t2_inf_sha_beh_w
+t3_pri_con_w ~~ a*t3_inf_sha_att_w + b*t3_inf_sha_beh_w
+t3_inf_sha_att_w ~~ c*t3_inf_sha_beh_w
+
+# setting variances of observed variables to zero
+t1_pri_con_fs ~~ 0*t1_pri_con_fs
+t2_pri_con_fs ~~ 0*t2_pri_con_fs
+t3_pri_con_fs ~~ 0*t3_pri_con_fs
+t1_inf_sha_att_fs ~~ 0*t1_inf_sha_att_fs
+t2_inf_sha_att_fs ~~ 0*t2_inf_sha_att_fs
+t3_inf_sha_att_fs ~~ 0*t3_inf_sha_att_fs
+t1_inf_sha_beh_fs ~~ 0*t1_inf_sha_beh_fs
+t2_inf_sha_beh_fs ~~ 0*t2_inf_sha_beh_fs
+t3_inf_sha_beh_fs ~~ 0*t3_inf_sha_beh_fs
+
+# control variables
+t1_pri_con_fs ~ age + edu_num + male
+t2_pri_con_fs ~ age + edu_num + male
+t3_pri_con_fs ~ age + edu_num + male
+t1_inf_sha_beh_fs ~ age + edu_num + male
+t2_inf_sha_beh_fs ~ age + edu_num + male
+t3_inf_sha_beh_fs ~ age + edu_num + male
+t1_inf_sha_att_fs ~ age + edu_num + male
+t2_inf_sha_att_fs ~ age + edu_num + male
+t3_inf_sha_att_fs ~ age + edu_num + male
+'
+fit <- sem(model, data = d_wide, orthogonal = TRUE, missing = "ML")
+summary(fit, standardized = TRUE, fit.measures = TRUE, ci = TRUE)
+```
+
+```{r cache=F}
+save.image("data/workspace.RData")
+```

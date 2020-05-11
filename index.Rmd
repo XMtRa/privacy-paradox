@@ -1,0 +1,11 @@
+---
+title: "Analyzing the Privacy Paradox Using a Nationally Representative Three-Wave Panel Study"
+---
+
+On this website, you can find the companion material for the paper _Analyzing the Privacy Paradox Using a Nationally Representative Three-Wave Panel Study_. 
+
+You can either read the paper [online](manuscript.html) or download it as [pdf](manuscript.pdf). You can also find the detailed code and summaries of the [analyses](analyses.html) that were reported in the paper.
+
+Please note that this OSM does not contain the actual data, which can be downloaded from [link removed during peer-review].
+
+This website is produced directly from the project's [github repository](https://github.com/XMtRa/privacy-paradox). You can download the material, file an issue, or submit a pull request.
