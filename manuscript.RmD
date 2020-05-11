@@ -12,7 +12,7 @@ affiliation:
   - id            : "1"
     institution   : ""
 author_note: |
-  This manuscript features a companion website that includes detailed summaries of the statistical results, the code, additional analyses, and a reproducible version of the manuscript (https://github.com/XMtRa/privacy-paradox). The data can be downloaded from [link blinded during review]. 
+  This manuscript features a companion website that includes detailed summaries of the statistical results, the code, additional analyses, and a reproducible version of the manuscript (https://xmtra.github.io/privacy-paradox/). The data can be downloaded from [link blinded during review]. 
 abstract: |
   The privacy paradox states that people's concerns about online privacy are unrelated to their online sharing of personal information. 
   On the basis of a representative sample of the German population, which includes `r knitr::load_cache(label = "load-data", object = "n_complete")` respondents who were interviewed at three waves separated by 6 months, we investigate the privacy paradox from a longitudinal perspective. Using a cross-lagged panel model with random intercepts, we differentiate between-person relations from within-person effects.
@@ -288,7 +288,7 @@ Fit was assessed according to the common criteria as described by @klinePrincipl
 The final model fit the data well, `r fit_txt(fit_riclpm)`. 
 
 For the analyses, we used `r r_citations`.
-The code, additional analyses, and a reproducible version of this manuscript can be found on the manuscript's companion website at https://XMtRa.github.io/privacy-paradox.
+The code, additional analyses, and a reproducible version of this manuscript can be found on the manuscript's companion website at https://xmtra.github.io/privacy-paradox/.
 
 ## Procedure and Respondents
 
