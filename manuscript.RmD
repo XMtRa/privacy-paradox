@@ -1,25 +1,8 @@
 ---
 title             : "Analyzing the Privacy Paradox Using a Nationally Representative Three-Wave Panel Study" 
-shorttitle        : "Privacy Paradox"
-author:            
-  - name          : ""
-    email         : ""
-    affiliation   : "1"
-    address       : ""
-    corresponding : yes
-affiliation:
-    
-  - id            : "1"
-    institution   : ""
-author_note: |
-  This manuscript features a companion website that includes detailed summaries of the statistical results, the code, additional analyses, and a reproducible version of the manuscript (https://xmtra.github.io/privacy-paradox/). The data can be downloaded from [link blinded during review]. 
+shorttitle        : "Analyzing the Privacy Paradox"
 abstract: |
-  The privacy paradox states that people's concerns about online privacy are unrelated to their online sharing of personal information. 
-  On the basis of a representative sample of the German population, which includes `r knitr::load_cache(label = "load-data", object = "n_complete")` respondents who were interviewed at three waves separated by 6 months, we investigate the privacy paradox from a longitudinal perspective. Using a cross-lagged panel model with random intercepts, we differentiate between-person relations from within-person effects.
-  Results revealed that people who were more concerned about their online privacy than others also shared slightly less personal information and had substantially more negative attitudes toward information sharing (between-person level). 
-  People who were more concerned than usual also shared slightly less information than usual (within-person level). 
-  We found no long-term effects of privacy concerns on information sharing or attitudes 6 months later.
-  The results provide further evidence against the privacy paradox, but more research is needed to better understand the variables' potential causal relations.
+  The privacy paradox states that people’s concerns about online privacy are unrelated to their online sharing of personal information. On the basis of a representative sample of the German population, which includes `r knitr::load_cache(label = "load-data", object = "n_complete")` respondents interviewed at three waves separated by 6 months, we investigate the privacy paradox from a longitudinal perspective. Using a cross-lagged panel model with random intercepts, we differentiate between-person relations from within-person effects. Results revealed that people who were more concerned about their online privacy than others also shared slightly less personal information and had substantially more negative attitudes toward information sharing (between-person level). People who were more concerned than usual also shared slightly less information than usual (within-person level). We found no long-term effects of privacy concerns on information sharing or attitudes 6 months later. The results provide further evidence against the privacy paradox, but more research is needed to better understand potential causal relations.
 keywords          : "privacy paradox, privacy concerns, information sharing, longitudinal analysis, structural equation modeling"
 wordcount         : "`r wordcountaddin::word_count('manuscript.Rmd')`"
 figsintext        : yes
@@ -27,10 +10,6 @@ figurelist        : no
 tablelist         : no
 footnotelist      : no
 lineno            : yes
-bibliography      : 
-  - [bibliography/references.bib]
-  - [bibliography/r-references.bib]
-lang              : "english"
 class             : "man"
 mask              : yes
 # to compile as pdf
@@ -47,6 +26,10 @@ output:
     toc_float:
       collapsed: FALSE
     toc_depth: 2
+bibliography      : 
+  - [bibliography/references.bib]
+  - [bibliography/r-references.bib]
+csl               : "sage-harvard.csl"
 ---
 
 ```{r knitr-set-up, include=F}
