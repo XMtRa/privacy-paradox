@@ -1,4 +1,4 @@
-# Privacy Paradox Longitudinal
+# Analyzing the Privacy Paradox Using a Nationally Representative Three-Wave Panel Study
 
 Here, you can find all analyses presented in the paper, additional analyses, and a reproducible version of the manuscript.
 
