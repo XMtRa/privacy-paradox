@@ -39,7 +39,7 @@ In what follows, we report the results of additional analyses that were also cal
 # set-up
 no <- 0
 name <- "pri_con"
-d_tmp <- select(d_wide, contains(paste0("t1_", name)), -contains("_m"))
+d_tmp <- select(d_wide, contains(paste0("t1_", name)), -contains("_m"), -contains("_fs"))
 model <- fa.parallel(d_tmp, fa = "fa", fm = "ml")
 factan <- fa(d_tmp, fm = "ml", nfactors = model$nfact, rotate = "promax")
 print(factan, sort = TRUE, cut = .3)
