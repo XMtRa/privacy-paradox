@@ -38,8 +38,9 @@ knitr::opts_chunk$set(echo=F, error=F, message=F, tidy=T, warning=F)
 
 ```{r load-packs, include=F}
 # Load and install packages
-# devtools::install_github("tdienlin/td@v.0.0.2.5")  # uncommen to install
-packages <- c("broman", "kableExtra", "knitr", "lavaan", "magrittr", "papaja"
+# devtools::install_github("tdienlin/td@v.0.0.2.5")  # uncomment to install
+# devtools::install_github("benmarwick/wordcountaddin", type = "source", dependencies = TRUE) # uncomment to install
+packages <- c("broman", "GGally", "kableExtra", "knitr", "lavaan", "magrittr", "papaja"
              , "psych", "pwr", "td", "tidyverse", "semTools", "scales")
 invisible(lapply(packages, library, character.only = T))
 
@@ -111,8 +112,6 @@ There also exist several systematic literature reviews on the privacy paradox [@
 However, the authors also note that the privacy paradox is a "complex phenomenon that has not been fully explained yet".
 @barthPrivacyParadoxInvestigating2017 are more skeptical, and argue that "attempts to theoretically explain and practically solve the problem of the privacy paradox are still scarce and we feel the subject deserves far more research attention" (p. 1052).
 
-<!-- In conclusion, large parts of the current literature suggests that a significant relation between concerns about online privacy and the online sharing of personal information exists and that it is small---which speaks against the privacy paradox. -->
-
 ## Defining Privacy Concerns and Information Sharing
 
 Privacy is defined as the "[...] voluntary and temporary withdrawal of a person from the general society through physical or psychological means [...]" [@westinPrivacyFreedom1967, 7]. 
@@ -125,10 +124,8 @@ Several dimensions of privacy have been proposed.
 For example, it is possible to distinguish a vertical and a horizontal level [@masurSituationalPrivacySelfdisclosure2018].
 Whereas the vertical level captures privacy from authorities, institutions, or companies, horizontal privacy addresses privacy from peers, colleagues, or other people.
 When it comes to concerns in general, interestingly they do not seem to be established as a stand-alone theoretical concept in psychology [@colmanDictionaryPsychology2015].
-Lexically, concerns are defined as a "marked interest or regard usually arising through a personal tie or relationship" that also reflect an "uneasy state of blended interest, uncertainty, and apprehension" [@merriam-websterDefinitionConcern2018].
-Concerns therefore represent both a latent _motivation_ (or increased attention), a negatively valenced _emotion_ (or affective condition), and are mostly implicit.
+Concerns are usually understood as an uneasy mix of "interest, uncertainty, and apprehension" [@merriam-websterDefinitionConcern2018].
 As a theoretical construct, privacy concerns can hence be categorized as an affective motivational disposition.
-As such, there are many similarities with other concepts, including emotions (e.g., fear, anxiety), moods (e.g., dismay, fatigue), attitudes (risk perception, approval), values (e.g., autonomy, freedom), personality traits (e.g., introversion, risk avoidance), and even physiological activation (e.g., attention, arousal).
 Taken together, concerns about online privacy represent how much an individual is motivated to focus on his or her control over a voluntary withdrawal from other people or societal institutions on the Internet, accompanied by an uneasy feeling that his or her privacy might be threatened.
 
 The online sharing of personal information, on the other hand, captures how much person-related information people share when they use the Internet.
@@ -144,10 +141,8 @@ Fortunately, however, we know much about the behavioral effects of related conce
 Emotions, perhaps the concept most closely related to concerns, have a particularly strong effect on behavior. 
 By causing fight, flight, or freeze reactions, they are a primordial trigger of behavior and are considered to be an adaptive mechanism of evolved species [@dolanEmotionCognitionBehavior2002].
 
-Also empirically, concerns have been shown to affect behavior. 
-People more concerned about the environment show more environment-related behaviors [@bambergHowDoesEnvironmental2003].
-People more concerned about their appearance consume fewer calories [@hayesConcernAppearanceHealth1987].
-People more concerned about their bodies engage in more physical exercise [@reelRelationsBodyConcerns2007].
+Also empirically, concerns have been shown to affect behavior [@hayesConcernAppearanceHealth1987; @reelRelationsBodyConcerns2007]. 
+For example, people more concerned about the environment show more environment-related behaviors [@bambergHowDoesEnvironmental2003].
 Taken together, it is reasonable to expect that also concerns about online privacy should somehow reflect in the online sharing of personal information. 
 
 At the same time, there are some factors that likely diminish the relation.
@@ -179,7 +174,7 @@ In their meta-analysis, @baruhOnlinePrivacyConcerns2017 reported a median sample
 [^power]: Statistical power describes the probability of statistically detecting an effect that exists empirically. 
 Only with high statistical power is it possible to make valid claims about an effect's existence [@cohenPowerPrimer1992]. 
 
-In conclusion, in line with prior research and the within-person rationales presented above, we expect to find a small significant relation between privacy concerns and information sharing, both on the between-person level (Hypothesis 1) and the within-person level (Hypothesis 2).[^1]
+In conclusion, we expect to find a small significant relation between privacy concerns and information sharing, both on the between-person level (Hypothesis 1) and the within-person level (Hypothesis 2).[^1]
 
 Hypothesis 1: People who are more concerned about their online privacy than others will also be less likely to share personal information online than others.
 
@@ -475,6 +470,13 @@ apa_table(
 )
 ```
 
+In an additional analysis, we also tested the same model with a 1 year interval, which allowed to include data spanning until winter 2016 and 2017.
+Most effects remained the same.
+For example, we again found that people more concerned than others were less positive regarding information sharing (_r_ = -.36, _p_ < .001 ) and shared less information (_r_ = -.15, _p_ = .002). 
+Likewise, people more positive toward data sharing than others also shared substantially more data (_r_ = .66, _p_ < .001).
+Because including these two additional waves significantly reduces sample size, and because we consider it more likely that effects take place more immediately, these results should be considered exploratory.
+For an overview of the results, see the additional analyses on our companion website (Section 2.1.2.7).
+
 # Discussion
 
 Most research on the privacy paradox suggests a significant small effect of privacy concerns on the online sharing of personal information [e.g., @baruhOnlinePrivacyConcerns2017]. 
@@ -487,7 +489,7 @@ The results of the between-person analyses showed that people who were more conc
 In addition, people who were more concerned about their privacy than others also held substantially more negative attitudes toward disclosing personal information online.
 Notably, we found a very strong between-person correlation between attitudes toward information sharing and actual information sharing, which shows that typical online disclosure can be predicted precisely by a person's attitude.
 Taken together, the cross-sectional results are in line with the extant literature:
-The between-person correlation of privacy concerns and information sharing found in this study (i.e., $\beta$ = -.08) fall within the 95% confidence interval of the effect reported by @baruhOnlinePrivacyConcerns2017 (i.e., _r_ = -.13, 95% CI [-.07, -.18]). 
+The between-person correlation of privacy concerns and information sharing found in this study (i.e., $\beta$ = -.09) fall within the 95% confidence interval of the effect reported by @baruhOnlinePrivacyConcerns2017 (i.e., _r_ = -.13, 95% CI [-.07, -.18]). 
 Note that the between-person correlations reported here represent averaged measurements across three waves, which makes the findings more robust than typical one-shot measures.
 
 In conclusion, this study suggests that the privacy paradox does not exist on a between-person level.
@@ -514,7 +516,8 @@ The data were collected between May 2014 and May 2015---hence, after the Snowden
 Such sweeping events, however, could affect privacy concerns, online behavior, or their mutual relation, which would limit the generalizability of our results. 
 Although this is an important caveat, we have reason to believe that our findings are largely robust. 
 First, additional analyses showed that the within-person relationships were stable across waves (a period of 1 year). 
-Second, records of online search terms revealed that although interest in privacy-related topics and privacy-enhancing technologies increased after the Snowden revelations, it returned to prior levels after only two weeks [@preibuschPrivacyBehaviorsSnowden2015]. 
+Second, another set of additional analyses showed that most effects remained stable until winter 2017.
+Third, records of online search terms revealed that although interest in privacy-related topics and privacy-enhancing technologies increased after the Snowden revelations, it returned to prior levels after only two weeks [@preibuschPrivacyBehaviorsSnowden2015]. 
 It thus seems that levels of privacy concerns and information sharing, as well as their mutual relationship, are largely robust. 
 
 In asking how much information respondents share when using the Internet in general, we automatically aggregated different platforms, contexts, and situations. However, privacy mechanisms can differ largely across contexts [@nissenbaumPrivacyContextTechnology2010] and situations [@masurSituationalPrivacySelfdisclosure2018]. Our broad perspective, therefore, is somewhat problematic and limits our capacity to understand and predict the behavior of individual people in specific situations. At the same time, aiming to maximize generalizability, we were able to extract some general underlying patterns, which can serve as a starting point for more contextualized analyses (see below).
