@@ -16,16 +16,16 @@ mask              : yes
 # (a) move file "_site.yml" to folder "tmp"
 # (b) uncomment the following lines until incl. "\raggedbottom"
 # (c) comment lines after "output: html_document ..."
-# output            : papaja::apa6_pdf
-# header-includes:
-#   - \setlength{\parskip}{0em}
-#   - \raggedbottom
-output:
-  html_document:
-    toc: TRUE
-    toc_float:
-      collapsed: FALSE
-    toc_depth: 2
+output            : papaja::apa6_pdf
+header-includes:
+  - \setlength{\parskip}{0em}
+  - \raggedbottom
+# output:
+#   html_document:
+#     toc: TRUE
+#     toc_float:
+#       collapsed: FALSE
+#     toc_depth: 2
 bibliography      : 
   - [bibliography/references.bib]
   - [bibliography/r-references.bib]
@@ -58,7 +58,7 @@ r_citations <- cite_r("bibliography/r-references.bib",
 load("data/workspace.RData")
 ```
 
-# Introduction
+<!-- # Introduction -->
 
 The privacy paradox states that the information disclosure of Internet users is problematic: 
 Although many people are concerned about their privacy online, they still share plenty of personal information on the web [e.g., @acquistiLossesGainsHyperbolic2003]. 
@@ -79,7 +79,7 @@ Hence, as the next step in investigating the privacy paradox and to better under
 
 With this study we aim to answer four major questions. 
 First, on a between-person level, how are concerns about online privacy related to the online sharing of personal information? 
-Second, on a within-person level, does information sharing decrease when concerns increase?
+Second, on a within-person level, is information sharing lower than usual when concerns are higher than usual?
 Third, what are the potential long-term effects?
 Are changes in concerns related to changes in information sharing 6 months later and/or vice versa? 
 Fourth, what is the role of privacy attitudes, do they mediate the relation between privacy concerns and information sharing?
@@ -197,7 +197,7 @@ Other studies with comparable research questions have therefore used an interval
 In general, we believe that it should be possible to find long-term effects. 
 It has been argued that privacy concerns affect privacy behavior in the long run [e.g., @heirmanPredictingAdolescentsDisclosure2013]. 
 The underlying theoretical mechanism could be that the emotional part of privacy concerns causes (a) motivated information selection and (b) motivated information processing, which is likely to change actual behavior [@nabiCognitivefunctionalModelEffects1999]. 
-Specifically, when privacy concerns increase (e.g., because of experienced or witnessed privacy infringements), people might begin reading more media articles on privacy issues and might also consume these articles more carefully, which could prompt information sharing practices that are more cautious.
+Specifically, when privacy concerns are higher than usual (e.g., because of experienced or witnessed privacy infringements), people might begin reading more media articles on privacy issues and might also consume these articles more carefully, which could prompt information sharing practices that are more cautious.
 Also empirically, a study with 290 participants found small negative longitudinal (between-person) relations between privacy concerns and self-disclosure [@koohikamaliInvestigationDynamicModel2019].
 
 At the same time, the adverse effect seems plausible as well, with two potential outcomes. 
@@ -490,14 +490,14 @@ In addition, people who were more concerned about their privacy than others also
 Notably, we found a very strong between-person correlation between attitudes toward information sharing and actual information sharing, which shows that typical online disclosure can be predicted precisely by a person's attitude.
 Taken together, the cross-sectional results are in line with the extant literature:
 The between-person correlation of privacy concerns and information sharing found in this study (i.e., $\beta$ = -.09) fall within the 95% confidence interval of the effect reported by @baruhOnlinePrivacyConcerns2017 (i.e., _r_ = -.13, 95% CI [-.07, -.18]). 
-Note that the between-person correlations reported here represent averaged measurements across three waves, which makes the findings more robust than typical one-shot measures.
+Notably, the between-person correlations reported here represent averaged measurements across three waves, which makes the findings more robust than typical one-shot measures.
 
 In conclusion, this study suggests that the privacy paradox does not exist on a between-person level.
 The differences between people with regard to their online information sharing behavior can be explained by differences in their privacy concerns to a small extent, and by differences in their privacy attitudes to a large extent.
 The more specific we become, the better we can explain online behavior: 
 Whereas privacy concerns are related only weakly to online information sharing [e.g., @baruhOnlinePrivacyConcerns2017], more specific risks perceptions are related to behavior more closely [e.g., @bolUnderstandingEffectsPersonalization2018; @yuMetaanalysisExplorePrivacy2020], whereas behavioral attitudes are the best predictors [@dienlinPrivacyParadoxRelic2015]. 
 
-The within-person results showed that when a person's privacy concerns increased, the same person also shared slightly less information online than usual.
+The within-person results showed that when a person's privacy concerns are higher than usual, the same person also shared slightly less information online than usual.
 Moreover, people who developed more positive attitudes toward the online sharing of personal information than usual, also shared substantially more personal information online.
 Together, changes in concerns and attitudes are therefore related to changes in behavior, which speaks against the privacy paradox also on the within-person level. 
 
@@ -512,7 +512,7 @@ Of course, it could also be that longterm longitudinal effects do not exist.
 
 ## Limitations
 
-The data were collected between May 2014 and May 2015---hence, after the Snowden revelations in 2013, but before the Equifax data breach in 2017, Cambridge Analytica (2018), or the implementation of the General Data Protection Regulation (2018). 
+The data were collected between May 2014 and May 2015---hence, after the Snowden revelations in 2013, but before the Equifax data breach in 2017, the Cambridge Analytica data breach in 2018, or the implementation of the General Data Protection Regulation in 2018. 
 Such sweeping events, however, could affect privacy concerns, online behavior, or their mutual relation, which would limit the generalizability of our results. 
 Although this is an important caveat, we have reason to believe that our findings are largely robust. 
 First, additional analyses showed that the within-person relationships were stable across waves (a period of 1 year). 

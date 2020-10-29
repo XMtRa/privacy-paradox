@@ -420,10 +420,8 @@ div.tocify {
 
 <pre class="r"><code># relevant packages
 devtools::install_github(&quot;tdienlin/td@v0.0.2.6&quot;)
-required &lt;- c(&quot;GGally&quot;, &quot;ggplot2&quot;, &quot;kableExtra&quot;, &quot;knitr&quot;,
-              &quot;lavaan&quot;, &quot;lme4&quot;,&quot;magrittr&quot;, &quot;MissMech&quot;, 
-              &quot;papaja&quot;, &quot;psych&quot;, &quot;pwr&quot;, &quot;MVN&quot;, &quot;semTools&quot;, 
-              &quot;sjstats&quot;, &quot;tidyverse&quot;, &quot;td&quot;)
+required &lt;- c(&quot;GGally&quot;, &quot;ggplot2&quot;, &quot;kableExtra&quot;, &quot;knitr&quot;, &quot;lavaan&quot;, &quot;lme4&quot;, &quot;magrittr&quot;, &quot;MissMech&quot;, &quot;papaja&quot;, &quot;psych&quot;, &quot;pwr&quot;, 
+    &quot;MVN&quot;, &quot;semTools&quot;, &quot;sjstats&quot;, &quot;tidyverse&quot;, &quot;td&quot;)
 
 # load required libraries
 lapply(required, function(x) library(x, character.only = T))
@@ -431,14 +429,13 @@ lapply(required, function(x) library(x, character.only = T))
 # export bib library
 r_refs(&quot;bibliography/r-references.bib&quot;)
 
-# first run &quot;data_wranling.R&quot;, in order to create these objects
+# first run &#39;data_wranling.R&#39;, in order to create these objects
 d_wide &lt;- read_csv(&quot;data/data_wide.csv&quot;)
 d_wide_all &lt;- read_csv(&quot;data/data_wide_all.csv&quot;)
 d_long &lt;- read_csv(&quot;data/data_long.csv&quot;)
 
 # Extract descriptives to report in paper
-desc &lt;- d_wide %&gt;% 
-  summarize_at(vars(ends_with(&quot;_m&quot;)), funs(mean(., na.rm = TRUE), sd(., na.rm = TRUE)))</code></pre>
+desc &lt;- d_wide %&gt;% summarize_at(vars(ends_with(&quot;_m&quot;)), funs(mean(., na.rm = TRUE), sd(., na.rm = TRUE)))</code></pre>
 <p>In what follows, we report the models that were run to obtain the results reported in the manuscript. To see the underlying code, click on the button <code>code</code>.</p>
 <div id="sociodemographics" class="section level1">
 <h1>Sociodemographics</h1>
@@ -499,7 +496,8 @@ College perc.
 </div>
 <div id="analysis-of-missing-values" class="section level1">
 <h1>Analysis of Missing Values</h1>
-<pre class="r"><code>d_tmp &lt;- select(d_wide, -contains(&quot;_m&quot;), -contains(&quot;tim&quot;), -contains(&quot;T4&quot;), -contains(&quot;T5&quot;), -contains(&quot;per&quot;), -contains(&quot;use&quot;), -c(id, age, edu, edu_num, male))
+<pre class="r"><code>d_tmp &lt;- select(d_wide, -contains(&quot;_m&quot;), -contains(&quot;tim&quot;), -contains(&quot;T4&quot;), -contains(&quot;T5&quot;), -contains(&quot;per&quot;), -contains(&quot;use&quot;), 
+    -c(id, age, edu, edu_num, male))
 test_mar &lt;- TestMCARNormality(d_tmp)
 
 # print patterns
