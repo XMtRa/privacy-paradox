@@ -40,6 +40,8 @@ knitr::opts_chunk$set(echo=F, error=F, message=F, tidy=T, warning=F)
 # Load and install packages
 # devtools::install_github("tdienlin/td@v.0.0.2.5")  # uncomment to install
 # devtools::install_github("benmarwick/wordcountaddin", type = "source", dependencies = TRUE) # uncomment to install
+# devtools::install_github("crsh/papaja")  # uncomment to install
+# devtools::install_github("cran/MissMech")
 packages <- c("broman", "GGally", "kableExtra", "knitr", "lavaan", "magrittr", "papaja"
              , "psych", "pwr", "td", "tidyverse", "semTools", "scales")
 invisible(lapply(packages, library, character.only = T))
@@ -133,6 +135,8 @@ Information sharing can be differentiated from communication and self-disclosure
 Communication is broad, because it comprises all verbal and nonverbal information that is emitted [e.g., @watzlawickPragmaticsHumanCommunication2011].
 Self-disclosure is more narrow, because it focuses on deliberate revelations about the true self to others, which including aspects such as personal fears, values, or plans [e.g., @jourardTransparentSelf1964].
 Information sharing is even more specific, because it addresses only person-related information,  including information about their age, sex, name, address, health, and finances.
+
+In what follows we hence investigate the two concepts of (a) concerns about online privacy and (b) online information sharing, aiming to investigate how they relate conceptually. In doing so, we adopt and focus on the perspective of individual people.
 
 ## The Relation Between Privacy Concerns and Information Sharing
 
@@ -537,13 +541,21 @@ At the time when the study was conceived in 2014, we were not yet aware of the i
 
 ## Future Research
 
-Evidence of within-person longitudinal effects is still missing. 
+We emphasize that when analyzing the privacy paradox we are likely dealing with small effects [@baruhOnlinePrivacyConcerns2017].
+Hence, to detect these small effects reliably we need large samples. 
+This is often not the case [@baruhOnlinePrivacyConcerns2017].
+In conclusion, it is crucial to use statistical designs that allow for sufficient statistical power.
+
+Next, evidence of within-person longitudinal effects is still missing. 
 Although we found significant within-person correlations at T1, they were absent across the 6-month intervals.
 Together, this suggests that longitudinal effects might exist, but that they take place on a different time interval.
 Future research could hence probe different intervals.
 For theoretical reasons (e.g., due to availability heuristics), it is plausible to use short intervals;
 for statistical reasons (e.g., because of the high stability of privacy concerns), it would also make sense to test longer intervals  [@dormannOptimalTimeLags2015].
 
+In general, we emphasize that our findings should not be overgeneralized. 
+They are conditional on the data we collected, the methods we applied, and the theoretical perspectives we adopted. 
+We stress that analyzing the privacy paradox in other contexts using alternative approaches will likely lead to different results.
 Although we argue that in most circumstances privacy concerns and behavior should correlate modestly, the exact extent depends on a many boundary conditions.
 Future research should hence explicitly analyze different contexts [@nissenbaumPrivacyContextTechnology2010] and situations [@masurSituationalPrivacySelfdisclosure2018]. 
 Building on @kokolakisPrivacyAttitudesPrivacy2017, we suggest to analyze the following boundary conditions: 
@@ -555,23 +567,19 @@ Building on @kokolakisPrivacyAttitudesPrivacy2017, we suggest to analyze the fol
  - Type of information processing applied (implicit, heuristic, or peripheral vs. explicit, analytic, or central);
  - Existence of bias (e.g., overconfidence, optimism, comparative optimism, or hyperbolic discounting);
  - Type of information (e.g., sensitive vs. superficial, biographic, or person-related);
- - Benefit immediacy and risk diffusion (high vs. low). 
+ - Benefit immediacy and risk diffusion (high vs. low);
+ - Object of investigation (e.g., individual people, interactions between people, developmental perspectives, critical incidents, societal structures, or historical developments).
 
 Specifically, we encourage analyzing privacy behaviors also from a situational perspective, accounting for temporal needs, interpersonal perceptions, contextual cues, or characteristics of communication channels [@masurSituationalPrivacySelfdisclosure2018].
 For example, whereas general levels of information sharing are likely best explained using privacy _concerns_, situational information sharing might be best explained using privacy _heuristics_ [@sundarUnlockingPrivacyParadox2013]. 
 
 Next to these theory-related boundary conditions there are also methodological ones: 
 
- - Analysis design (e.g., theoretical, experimental, questionnaire-based, interview-based, or anecdotal);
+ - Analysis design and perspective (e.g., theoretical, experimental, questionnaire-based, interview-based, ethnographic, or computational);
  - Quality of measurement (high vs. low; low quality less likely to detect statistical significance);
  - Sample size (small vs. large; small samples less likely to detect statistical significance);
  - Statistical analysis (e.g., SEM vs. Regression; analyses without error control less likely to find statistical significance);
- - Operationalization (e.g., concerns vs. risk perceptions vs. behavioral attitudes; the more specific, the stronger the relation). 
- 
-We emphasize that when analyzing the privacy paradox we are likely dealing with small effects [@baruhOnlinePrivacyConcerns2017].
-Hence, to detect these small effects reliably we need large samples. 
-This is often not the case [@baruhOnlinePrivacyConcerns2017].
-In conclusion, it is crucial to use statistical designs that allow for sufficient statistical power.
+ - Operationalization (e.g., concerns vs. risk perceptions vs. behavioral attitudes; the more specific, the stronger the relation).
 
 ## Conclusion
 
