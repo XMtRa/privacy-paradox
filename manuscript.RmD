@@ -16,16 +16,16 @@ mask              : yes
 # (a) move file "_site.yml" to folder "tmp"
 # (b) uncomment the following lines until incl. "\raggedbottom"
 # (c) comment lines after "output: html_document ..."
-output            : papaja::apa6_pdf
-header-includes:
-  - \setlength{\parskip}{0em}
-  - \raggedbottom
-# output:
-#   html_document:
-#     toc: TRUE
-#     toc_float:
-#       collapsed: FALSE
-#     toc_depth: 2
+# output            : papaja::apa6_pdf
+# header-includes:
+#   - \setlength{\parskip}{0em}
+#   - \raggedbottom
+output:
+  html_document:
+    toc: TRUE
+    toc_float:
+      collapsed: FALSE
+    toc_depth: 2
 bibliography      : 
   - [bibliography/references.bib]
   - [bibliography/r-references.bib]
