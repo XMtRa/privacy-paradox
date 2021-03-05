@@ -76,7 +76,7 @@ Although such a perspective is interesting and represents a viable first step, i
 The privacy paradox, however, implies a causal perspective:
 Does a person, if _he or she_ becomes more concerned about online privacy, then also share less personal information?
 This mismatch is problematic because although between-person relations are, except for some special cases, a _necessary_ condition for causal within-person effects, they are by no means a _sufficient_ one.
-For example, it could be that the between-person relation is determined other third variables. 
+For example, it could be that the between-person relation is determined by other third variables. 
 Hence, as the next step in investigating the privacy paradox and to better understand the causal relation between privacy concerns and information sharing, it is necessary to conduct studies with within-person designs.
 
 With this study we aim to answer four major questions. 
@@ -163,7 +163,7 @@ Likewise, personal information is also often shared by others, a phenomenon desc
 lack of strength of concerns,
 absence of negative personal experiences, 
 or situational constraints due to social desirability.
-In conclusion, also in the context of the privacy paradox it _not_ reasonable to expect a _perfect_ relation between attitudes and behaviors.
+In conclusion, also in the context of the privacy paradox it is _not_ reasonable to expect a _perfect_ relation between attitudes and behaviors.
 However, we should still expect to find a relation that is _small_ or _moderate_.
 
 There are also some methodological explanations as to why some studies did not detect statistically significant relations.
@@ -220,10 +220,11 @@ Research Question 1.2: Do changes in the online sharing of personal information 
 ## The Role of Attitudes
 
 It has been argued that privacy attitudes could bridge the gap between concerns and information sharing [e.g., @dienlinPrivacyParadoxRelic2015]. 
-In contrast to privacy concerns, privacy attitudes capture a more explicit, fluctuating cognitive appraisal [@tsay-vogelSocialMediaCultivating2018]. 
-Although both variables are related to information disclosure, attitudes are likely the better predictor. 
-This reasoning follows the rational choice paradigm [@simonBehavioralModelRational1955], which maintains that behavior is always at least partially influenced by convictions, attitudes, and cost-benefit analyses. 
-Also empirically, a study of 1,042 youths from Belgium found that the relation between privacy attitudes and disclosure of personal information was strong (_r_ = .56), whereas the relation between privacy concerns and disclosure was only moderate [_r_ = -.29; @heirmanPredictingAdolescentsDisclosure2013]. 
+In contrast to general and implicit privacy concerns, privacy attitudes capture a more explicit, specific cognitive appraisal [@tsay-vogelSocialMediaCultivating2018]. 
+Because general dispositions oftentimes affect more specific appraisals [@fishbeinPredictingChangingBehavior2010], general concerns about privacy may similarly affect more specific privacy attitudes [@dienlinPrivacyParadoxRelic2015].
+This reasoning follows the rational choice paradigm [@simonBehavioralModelRational1955], which maintains that behavior is always at least partially influenced by specific convictions, attitudes, and cost-benefit analyses. 
+Therefore, although both variables are related to information disclosure, attitudes are likely the better predictor. 
+Also empirically, a study of 1,042 youths from Belgium found that the relation between privacy attitudes and disclosure intentions of personal information was strong (_r_ = .56), whereas the relation between privacy concerns and disclosure intentions was only moderate [_r_ = -.29; @heirmanPredictingAdolescentsDisclosure2013]. 
 
 Hypothesis 3.1: People who are more concerned about their online privacy than others will also hold a less positive attitude toward the online sharing of personal information than others.
 
@@ -367,7 +368,7 @@ Fit was assessed according to the common criteria as described by @klinePrincipl
 The final model fit the data well, `r fit_txt(fit_riclpm)`. 
 
 For the analyses, we used `r r_citations`.
-The code, additional analyses, and a reproducible version of this manuscript can be found on the manuscript's companion website at https://xmtra.github.io/privacy-paradox.
+The code, additional analyses (e.g., ICCs or analyses of invariance), and a reproducible version of this manuscript can be found on the manuscript's companion website at https://xmtra.github.io/privacy-paradox.
 
 # Results
 
